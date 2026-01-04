@@ -25,8 +25,12 @@ interface UseChatReturn {
  * Custom hook for handling streaming chat with the Gemini AI backend.
  * Supports Server-Sent Events (SSE) for real-time text streaming.
  */
+const API_URL = import.meta.env.VITE_API_URL || ''
+
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
-  const { apiEndpoint = '/api/chat-stream', token } = options
+  // Use Render backend if VITE_API_URL is set, otherwise use local Netlify function
+  const defaultEndpoint = API_URL ? `${API_URL}/api/chat` : '/api/chat-stream'
+  const { apiEndpoint = defaultEndpoint, token } = options
 
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)

@@ -19,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const TOKEN_KEY = 'magister_t_token'
 const USER_KEY = 'magister_t_user'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -39,7 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (googleToken: string) => {
     try {
-      const response = await fetch('/api/auth-google', {
+      // Use Render backend if available, otherwise local Netlify function
+      const authEndpoint = API_URL ? `${API_URL}/api/auth/google` : '/api/auth-google'
+      const response = await fetch(authEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
