@@ -13,13 +13,19 @@ interface MagisterPortraitProps {
   showWink?: boolean        // Show wink (user said thanks etc)
 }
 
+// Minimum display times in ms
+const MIN_READING_TIME = 1000
+const MIN_IDEA_TIME = 1500
+
 function MagisterPortrait({ isThinking = false, isResponding = false, showWink = false }: MagisterPortraitProps) {
   const [currentOriginal, setCurrentOriginal] = useState<1 | 2>(1)
   const [avatarState, setAvatarState] = useState<AvatarState>('idle')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const winkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ideaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const wasRespondingRef = useRef(false)
+  const readingStartTimeRef = useRef<number>(0)
+  const ideaStartTimeRef = useRef<number>(0)
+  const minTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Handle state transitions based on props
   useEffect(() => {
@@ -36,38 +42,59 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
         setAvatarState('idle')
       }, 2000)
     } else if (isThinking && !isResponding) {
-      // User sent message, AI is thinking
-      setAvatarState('reading')
-      wasRespondingRef.current = false
+      // User sent message, AI is thinking - show reading
+      if (avatarState !== 'reading') {
+        setAvatarState('reading')
+        readingStartTimeRef.current = Date.now()
+      }
     } else if (isResponding) {
-      // AI started responding - show idea
-      if (!wasRespondingRef.current) {
-        setAvatarState('idea')
-        wasRespondingRef.current = true
+      // AI started responding - transition from reading to idea
+      if (avatarState === 'reading') {
+        // Ensure reading was shown for minimum time
+        const readingElapsed = Date.now() - readingStartTimeRef.current
+        const remainingReadingTime = Math.max(0, MIN_READING_TIME - readingElapsed)
 
-        // After 2 seconds of responding, go back to idle
-        if (ideaTimeoutRef.current) {
-          clearTimeout(ideaTimeoutRef.current)
-        }
+        if (minTimeoutRef.current) clearTimeout(minTimeoutRef.current)
+
+        minTimeoutRef.current = setTimeout(() => {
+          setAvatarState('idea')
+          ideaStartTimeRef.current = Date.now()
+
+          // After minimum idea time, go back to idle
+          if (ideaTimeoutRef.current) clearTimeout(ideaTimeoutRef.current)
+          ideaTimeoutRef.current = setTimeout(() => {
+            setAvatarState('idle')
+          }, MIN_IDEA_TIME)
+        }, remainingReadingTime)
+      } else if (avatarState !== 'idea') {
+        // Direct to idea if not coming from reading
+        setAvatarState('idea')
+        ideaStartTimeRef.current = Date.now()
+
+        if (ideaTimeoutRef.current) clearTimeout(ideaTimeoutRef.current)
         ideaTimeoutRef.current = setTimeout(() => {
           setAvatarState('idle')
-        }, 2000)
+        }, MIN_IDEA_TIME)
       }
-    } else {
-      // Back to idle
-      setAvatarState('idle')
-      wasRespondingRef.current = false
+    } else if (!isThinking && !isResponding && !showWink) {
+      // Only go to idle if no minimum time requirements are pending
+      if (avatarState === 'idea') {
+        const ideaElapsed = Date.now() - ideaStartTimeRef.current
+        if (ideaElapsed >= MIN_IDEA_TIME) {
+          setAvatarState('idle')
+        }
+        // Otherwise the ideaTimeout will handle it
+      } else if (avatarState !== 'reading') {
+        setAvatarState('idle')
+      }
     }
 
     return () => {
-      if (winkTimeoutRef.current) {
-        clearTimeout(winkTimeoutRef.current)
-      }
-      if (ideaTimeoutRef.current) {
-        clearTimeout(ideaTimeoutRef.current)
-      }
+      if (winkTimeoutRef.current) clearTimeout(winkTimeoutRef.current)
+      if (ideaTimeoutRef.current) clearTimeout(ideaTimeoutRef.current)
+      if (minTimeoutRef.current) clearTimeout(minTimeoutRef.current)
     }
-  }, [isThinking, isResponding, showWink])
+  }, [isThinking, isResponding, showWink, avatarState])
 
   // Random switching between original1 and original2 when idle
   useEffect(() => {
@@ -107,11 +134,11 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
 
   return (
     <div className="flex items-center justify-center h-full p-6">
-      <div className={`w-56 h-56 overflow-hidden transition-opacity duration-150 ${isTransitioning ? 'opacity-80' : 'opacity-100'}`}>
+      <div className={`w-64 h-64 transition-opacity duration-150 ${isTransitioning ? 'opacity-80' : 'opacity-100'}`}>
         <img
           src={getCurrentImage()}
           alt="Magister T"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
         />
       </div>
     </div>
