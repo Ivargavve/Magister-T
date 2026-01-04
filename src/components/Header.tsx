@@ -38,21 +38,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
   }
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 glass border-b border-white/5">
-      {/* Logo and title */}
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-glow">
-            T
-          </div>
-        </div>
-        <div>
-          <h1 className="text-lg font-semibold text-dark-100">Magister T</h1>
-          <p className="text-xs text-dark-500">AI-assistent för programmering</p>
-        </div>
-      </div>
-
+    <header className="flex items-center justify-end px-6 py-4 border-b border-white/5">
       {/* Right side: Settings and User menu */}
       <div className="flex items-center gap-2">
         {/* Settings button */}
