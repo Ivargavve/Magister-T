@@ -63,21 +63,23 @@ export async function verifyGoogleToken(token: string): Promise<{
     // Not a valid ID token, try as access token
   }
 
-  // Try to use as access token to fetch user info
+  // Try to use as access token to fetch user info (same as Netlify function)
   try {
-    const response = await fetch(
-      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`
-    );
+    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
-      console.error('Failed to fetch user info with access token');
+      console.error('Failed to fetch user info with access token:', response.status);
       return null;
     }
 
     const userInfo = await response.json();
 
     return {
-      googleId: userInfo.sub,
+      googleId: userInfo.id,
       email: userInfo.email,
       name: userInfo.name || userInfo.email,
       picture: userInfo.picture || null,
