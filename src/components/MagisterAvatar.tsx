@@ -4,6 +4,7 @@ import original2 from '../assets/magister-t/original2.png'
 import reading from '../assets/magister-t/reading.png'
 import idea from '../assets/magister-t/idea.png'
 import wink from '../assets/magister-t/wink.png'
+import blink from '../assets/magister-t/blink.png'
 
 type AvatarState = 'idle' | 'reading' | 'idea' | 'wink'
 
@@ -18,7 +19,7 @@ const MIN_READING_TIME = 1000
 const MIN_IDEA_TIME = 1500
 
 // Preload all images on module load
-const preloadImages = [original1, original2, reading, idea, wink]
+const preloadImages = [original1, original2, reading, idea, wink, blink]
 preloadImages.forEach(src => {
   const img = new Image()
   img.src = src
@@ -27,6 +28,7 @@ preloadImages.forEach(src => {
 function MagisterPortrait({ isThinking = false, isResponding = false, showWink = false }: MagisterPortraitProps) {
   const [currentOriginal, setCurrentOriginal] = useState<1 | 2>(1)
   const [avatarState, setAvatarState] = useState<AvatarState>('idle')
+  const [isBlinking, setIsBlinking] = useState(false)
   const winkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ideaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const readingStartTimeRef = useRef<number>(0)
@@ -119,6 +121,30 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
     return () => clearTimeout(timeoutId)
   }, [avatarState])
 
+  // Random blinking during idle
+  useEffect(() => {
+    if (avatarState !== 'idle') {
+      setIsBlinking(false)
+      return
+    }
+
+    const scheduleBlink = () => {
+      // Random interval between 2-5 seconds
+      const interval = Math.random() * 3000 + 2000
+      return setTimeout(() => {
+        setIsBlinking(true)
+        // Blink for 200ms
+        setTimeout(() => {
+          setIsBlinking(false)
+        }, 200)
+        scheduleBlink()
+      }, interval)
+    }
+
+    const timeoutId = scheduleBlink()
+    return () => clearTimeout(timeoutId)
+  }, [avatarState])
+
   // Get the current image based on state
   const getCurrentImage = () => {
     switch (avatarState) {
@@ -130,6 +156,8 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
         return wink
       case 'idle':
       default:
+        // Show blink image briefly during idle
+        if (isBlinking) return blink
         return currentOriginal === 1 ? original1 : original2
     }
   }
