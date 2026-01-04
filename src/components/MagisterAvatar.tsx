@@ -147,8 +147,8 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
     }
 
     const scheduleBlink = () => {
-      // Random interval between 2-5 seconds
-      const interval = Math.random() * 3000 + 2000
+      // Random interval between 3-10 seconds
+      const interval = Math.random() * 7000 + 3000
       return setTimeout(() => {
         setIsBlinking(true)
         // Blink for 200ms
