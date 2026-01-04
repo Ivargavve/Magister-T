@@ -184,7 +184,7 @@ router.post('/:id/messages', requireAuth, async (req: Request, res: Response): P
     const messages = await getMessagesForChat(chatId);
 
     // Generate AI response
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     // Build conversation history for Gemini
     const chatHistory = messages.slice(0, -1).map((msg) => ({
@@ -207,7 +207,7 @@ router.post('/:id/messages', requireAuth, async (req: Request, res: Response): P
     // Auto-generate title if this is the first message
     if (messages.length <= 1 && chat.title === 'Ny konversation') {
       // Generate a short title based on the first message
-      const titleModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const titleModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       try {
         const titleResult = await titleModel.generateContent(
           `Skapa en kort titel (max 5 ord, på svenska) för en konversation som börjar med denna fråga: "${content}". Svara ENDAST med titeln, inget annat.`
@@ -277,7 +277,7 @@ router.post('/:id/messages/stream', requireAuth, async (req: Request, res: Respo
     res.flushHeaders();
 
     // Generate AI response with streaming
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const chatHistory = messages.slice(0, -1).map((msg) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
@@ -315,7 +315,7 @@ router.post('/:id/messages/stream', requireAuth, async (req: Request, res: Respo
 
     // Auto-generate title if this is the first message
     if (messages.length <= 1 && chat.title === 'Ny konversation') {
-      const titleModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const titleModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       try {
         const titleResult = await titleModel.generateContent(
           `Skapa en kort titel (max 5 ord, på svenska) för en konversation som börjar med denna fråga: "${content}". Svara ENDAST med titeln, inget annat.`
@@ -346,7 +346,7 @@ router.post('/anonymous', optionalAuth, async (req: Request, res: Response): Pro
       return;
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     // Build conversation history for Gemini
     const chatHistory = messages.slice(0, -1).map((msg: { role: string; content: string }) => ({

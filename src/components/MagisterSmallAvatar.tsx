@@ -1,4 +1,4 @@
-import frame3 from '../assets/magister-t/frame-3.png'
+import avatar from '../assets/magister-t/avatar.png'
 
 interface MagisterSmallAvatarProps {
   isThinking?: boolean
@@ -19,7 +19,7 @@ function MagisterSmallAvatar({ isThinking = false }: MagisterSmallAvatarProps) {
 
       {/* Portrait image */}
       <img
-        src={frame3}
+        src={avatar}
         alt="Magister T"
         className="relative w-full h-full object-cover"
       />

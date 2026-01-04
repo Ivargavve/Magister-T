@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 
 export interface Message {
   id: string
@@ -24,18 +24,57 @@ interface UseChatReturn {
 /**
  * Custom hook for handling streaming chat with the Gemini AI backend.
  * Supports Server-Sent Events (SSE) for real-time text streaming.
+ * For guests (no token), messages are persisted in localStorage.
  */
 const API_URL = import.meta.env.VITE_API_URL || ''
+const GUEST_MESSAGES_KEY = 'magister_t_guest_messages'
+
+// Load guest messages from localStorage
+const loadGuestMessages = (): Message[] => {
+  try {
+    const stored = localStorage.getItem(GUEST_MESSAGES_KEY)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch (e) {
+    console.error('Failed to load guest messages:', e)
+  }
+  return []
+}
+
+// Save guest messages to localStorage
+const saveGuestMessages = (messages: Message[]) => {
+  try {
+    // Only save non-streaming messages
+    const toSave = messages.filter(m => !m.isStreaming)
+    localStorage.setItem(GUEST_MESSAGES_KEY, JSON.stringify(toSave))
+  } catch (e) {
+    console.error('Failed to save guest messages:', e)
+  }
+}
 
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
   // Use Render backend if VITE_API_URL is set, otherwise use local Netlify function
   const defaultEndpoint = API_URL ? `${API_URL}/api/chat` : '/api/chat-stream'
   const { apiEndpoint = defaultEndpoint, token } = options
 
-  const [messages, setMessages] = useState<Message[]>([])
+  // For guests, load messages from localStorage on mount
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (!token) {
+      return loadGuestMessages()
+    }
+    return []
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Save messages to localStorage for guests whenever messages change
+  useEffect(() => {
+    if (!token) {
+      saveGuestMessages(messages)
+    }
+  }, [messages, token])
 
   /**
    * Stops the current streaming response
@@ -196,12 +235,15 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   )
 
   /**
-   * Clears all messages
+   * Clears all messages (and localStorage for guests)
    */
   const clearChat = useCallback(() => {
     stopStreaming()
     setMessages([])
-  }, [stopStreaming])
+    if (!token) {
+      localStorage.removeItem(GUEST_MESSAGES_KEY)
+    }
+  }, [stopStreaming, token])
 
   return {
     messages,

@@ -1,7 +1,7 @@
 import { useGoogleLogin } from '@react-oauth/google'
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import frame3 from '../assets/magister-t/frame-3.png'
+import avatar from '../assets/magister-t/avatar.png'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
@@ -83,7 +83,7 @@ function LoginScreen({ onSuccess }: LoginScreenProps) {
             {/* Portrait */}
             <div className="relative w-28 h-28 rounded-3xl overflow-hidden portrait-glow glow-subtle animate-float">
               <img
-                src={frame3}
+                src={avatar}
                 alt="Magister T"
                 className="w-full h-full object-cover"
               />

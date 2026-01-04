@@ -1,4 +1,4 @@
-import frame3 from '../assets/magister-t/frame-3.png'
+import avatar from '../assets/magister-t/avatar.png'
 
 interface MagisterPortraitProps {
   isThinking?: boolean
@@ -14,7 +14,7 @@ function MagisterPortrait({ isThinking = false }: MagisterPortraitProps) {
         {/* Portrait image */}
         <div className="relative w-56 h-56 rounded-3xl overflow-hidden">
           <img
-            src={frame3}
+            src={avatar}
             alt="Magister T"
             className="w-full h-full object-cover"
           />
