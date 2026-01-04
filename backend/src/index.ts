@@ -89,7 +89,10 @@ app.post('/api/chat', async (req: Request, res: Response) => {
       return;
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+    const apiKey = process.env.GEMINI_API_KEY || '';
+    console.log('Using Gemini API key (first 10 chars):', apiKey.substring(0, 10) + '...');
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const chatHistory = messages.slice(0, -1).map((msg: { role: string; content: string }) => ({
@@ -109,9 +112,10 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     const aiResponseText = response.text();
 
     res.json({ response: aiResponseText });
-  } catch (error) {
-    console.error('Chat error:', error);
-    res.status(500).json({ error: 'Failed to generate response' });
+  } catch (error: any) {
+    console.error('Chat error:', error?.message || error);
+    console.error('Full error:', JSON.stringify(error, null, 2));
+    res.status(500).json({ error: 'Failed to generate response', details: error?.message });
   }
 });
 
