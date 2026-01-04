@@ -5,6 +5,7 @@ import reading from '../assets/magister-t/reading.png'
 import idea from '../assets/magister-t/idea.png'
 import wink from '../assets/magister-t/wink.png'
 import blink from '../assets/magister-t/blink.png'
+import pelare from '../assets/magister-t/pelare.png'
 
 type AvatarState = 'idle' | 'reading' | 'idea' | 'wink'
 
@@ -19,7 +20,7 @@ const MIN_READING_TIME = 1000
 const MIN_IDEA_TIME = 1500
 
 // Preload all images on module load
-const preloadImages = [original1, original2, reading, idea, wink, blink]
+const preloadImages = [original1, original2, reading, idea, wink, blink, pelare]
 preloadImages.forEach(src => {
   const img = new Image()
   img.src = src
@@ -181,13 +182,25 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
   }
 
   return (
-    <div className="flex items-center justify-center h-full p-6">
-      <div className="w-64 h-64">
-        <img
-          src={getCurrentImage()}
-          alt="Magister T"
-          className="w-full h-full object-contain"
-        />
+    <div className="relative h-full w-full overflow-hidden">
+      {/* Avatar and pillar container - positioned at bottom */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
+        {/* Avatar */}
+        <div className="w-64 h-64 z-10">
+          <img
+            src={getCurrentImage()}
+            alt="Magister T"
+            className="w-full h-full object-contain"
+          />
+        </div>
+        {/* Pillar - extends below viewport */}
+        <div className="w-32 -mt-4">
+          <img
+            src={pelare}
+            alt=""
+            className="w-full object-contain"
+          />
+        </div>
       </div>
     </div>
   )
