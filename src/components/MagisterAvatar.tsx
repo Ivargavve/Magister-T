@@ -90,9 +90,27 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
         const ideaElapsed = Date.now() - ideaStartTimeRef.current
         if (ideaElapsed >= MIN_IDEA_TIME) {
           setAvatarState('idle')
+        } else {
+          // Schedule transition to idle after remaining time
+          const remainingTime = MIN_IDEA_TIME - ideaElapsed
+          if (ideaTimeoutRef.current) clearTimeout(ideaTimeoutRef.current)
+          ideaTimeoutRef.current = setTimeout(() => {
+            setAvatarState('idle')
+          }, remainingTime)
         }
-        // Otherwise the ideaTimeout will handle it
-      } else if (avatarState !== 'reading') {
+      } else if (avatarState === 'reading') {
+        // If stuck in reading state, go to idle
+        const readingElapsed = Date.now() - readingStartTimeRef.current
+        if (readingElapsed >= MIN_READING_TIME) {
+          setAvatarState('idle')
+        } else {
+          const remainingTime = MIN_READING_TIME - readingElapsed
+          if (minTimeoutRef.current) clearTimeout(minTimeoutRef.current)
+          minTimeoutRef.current = setTimeout(() => {
+            setAvatarState('idle')
+          }, remainingTime)
+        }
+      } else {
         setAvatarState('idle')
       }
     }

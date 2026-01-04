@@ -136,18 +136,18 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         content: content.trim(),
       }
 
-      // Create placeholder for assistant message
+      // Create placeholder for assistant message (NOT streaming yet - that comes when response starts)
       const assistantMessageId = (Date.now() + 1).toString()
       const assistantMessage: Message = {
         id: assistantMessageId,
         role: 'assistant',
         content: '',
-        isStreaming: true,
+        isStreaming: false,  // Will be set to true when response actually starts
       }
 
       setMessages((prev) => [...prev, userMessage, assistantMessage])
       setIsLoading(true)
-      setIsStreaming(true)
+      // Don't set isStreaming yet - wait until response actually starts
 
       try {
         // For authenticated users with no current chat, create one first
@@ -184,14 +184,25 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
           const data = await response.json()
           const responseText = data.assistantMessage?.content || ''
 
-          // Update messages with the response
+          // Set streaming to true briefly to trigger idea state, then immediately complete
+          setIsStreaming(true)
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessageId
-                ? { ...msg, content: responseText, isStreaming: false }
+                ? { ...msg, content: responseText, isStreaming: true }
                 : msg
             )
           )
+          // Immediately mark as done since this is a non-streaming response
+          setTimeout(() => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, isStreaming: false }
+                  : msg
+              )
+            )
+          }, 100)
         } else {
           // Guest mode - use the anonymous endpoint with real-time streaming
           const currentMessages = messages
@@ -222,19 +233,41 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
             const data = await response.json()
             const responseText = data.response || ''
 
+            // Set streaming to true briefly to trigger idea state
+            setIsStreaming(true)
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === assistantMessageId
-                  ? { ...msg, content: responseText, isStreaming: false }
+                  ? { ...msg, content: responseText, isStreaming: true }
                   : msg
               )
             )
+            // Immediately mark as done since this is a non-streaming response
+            setTimeout(() => {
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, isStreaming: false }
+                    : msg
+                )
+              )
+            }, 100)
           } else {
             // Handle SSE streaming in real-time
             const reader = response.body?.getReader()
             if (!reader) {
               throw new Error('No response body')
             }
+
+            // Now we're actually starting to stream - set streaming state
+            setIsStreaming(true)
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, isStreaming: true }
+                  : msg
+              )
+            )
 
             const decoder = new TextDecoder()
             let accumulatedText = ''
