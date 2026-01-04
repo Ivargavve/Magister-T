@@ -17,6 +17,13 @@ interface MagisterPortraitProps {
 const MIN_READING_TIME = 1000
 const MIN_IDEA_TIME = 1500
 
+// Preload all images on module load
+const preloadImages = [original1, original2, reading, idea, wink]
+preloadImages.forEach(src => {
+  const img = new Image()
+  img.src = src
+})
+
 function MagisterPortrait({ isThinking = false, isResponding = false, showWink = false }: MagisterPortraitProps) {
   const [currentOriginal, setCurrentOriginal] = useState<1 | 2>(1)
   const [avatarState, setAvatarState] = useState<AvatarState>('idle')
