@@ -1,7 +1,7 @@
 import { useGoogleLogin } from '@react-oauth/google'
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import avatar from '../assets/magister-t/avatar.png'
+import avatar from '../assets/magister-t/original1.png'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 

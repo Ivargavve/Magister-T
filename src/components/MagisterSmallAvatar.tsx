@@ -1,4 +1,4 @@
-import avatar from '../assets/magister-t/avatar.png'
+import avatar from '../assets/magister-t/original1.png'
 
 interface MagisterSmallAvatarProps {
   isThinking?: boolean

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import type { Message } from '../hooks/useChat'
 import MessageBubble from './Message'
 import Input from './Input'
@@ -12,8 +12,13 @@ interface ChatProps {
   onStopStreaming?: () => void
 }
 
+// Words that trigger wink when user says them
+const GRATITUDE_WORDS = ['tack', 'tackar', 'thanks', 'thank you', 'thx', 'ty', 'nice', 'perfekt', 'toppen', 'grymt', 'awesome', 'great', 'bra', 'kanon']
+
 function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming }: ChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [showWink, setShowWink] = useState(false)
+  const prevMessagesLengthRef = useRef(messages.length)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -21,6 +26,27 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
 
   // Check if any message is currently streaming
   const hasStreamingMessage = messages.some((m) => m.isStreaming)
+
+  // Detect when user sent a grateful message and response just finished
+  useEffect(() => {
+    // Only check when we have new messages and streaming just stopped
+    if (messages.length > prevMessagesLengthRef.current && !isStreaming && !isLoading) {
+      // Find the last user message
+      const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')
+
+      if (lastUserMessage) {
+        const content = lastUserMessage.content.toLowerCase()
+        const isGrateful = GRATITUDE_WORDS.some(word => content.includes(word))
+
+        if (isGrateful) {
+          setShowWink(true)
+          // Reset after 2.5 seconds (slightly longer than the avatar's 2s display)
+          setTimeout(() => setShowWink(false), 2500)
+        }
+      }
+    }
+    prevMessagesLengthRef.current = messages.length
+  }, [messages.length, isStreaming, isLoading])
 
   return (
     <div className="flex-1 flex overflow-hidden">
@@ -116,7 +142,11 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
       {/* Right side: Magister T Portrait (only visible when there are messages) */}
       {messages.length > 0 && (
         <div className="hidden lg:flex w-72 xl:w-80 flex-shrink-0 border-l border-white/5">
-          <MagisterPortrait />
+          <MagisterPortrait
+            isThinking={isLoading && !hasStreamingMessage}
+            isResponding={isStreaming || hasStreamingMessage}
+            showWink={showWink}
+          />
         </div>
       )}
     </div>
