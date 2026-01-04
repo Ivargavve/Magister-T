@@ -43,9 +43,9 @@ function Sidebar({ onNewChat, onSelectChat }: SidebarProps) {
               </h3>
             </div>
             <nav className="space-y-1">
-              {/* Placeholder - kommer fyllas med data fran databas */}
+              {/* Placeholder - kommer fyllas med data från databas */}
               <p className="px-3 py-4 text-sm text-dark-500 text-center">
-                Inga sparade chattar an
+                Inga sparade chattar än
               </p>
             </nav>
           </>
@@ -67,9 +67,9 @@ function Sidebar({ onNewChat, onSelectChat }: SidebarProps) {
                 />
               </svg>
             </div>
-            <p className="text-sm text-dark-400 mb-2">Gastlage</p>
+            <p className="text-sm text-dark-400 mb-2">Gästläge</p>
             <p className="text-xs text-dark-500 leading-relaxed">
-              Dina chattar sparas bara i denna session. Logga in for att spara din historik permanent.
+              Dina chattar sparas bara i denna session. Logga in för att spara din historik permanent.
             </p>
           </div>
         )}

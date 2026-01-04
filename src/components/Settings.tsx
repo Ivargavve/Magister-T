@@ -15,7 +15,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
       <div className="relative w-full max-w-md mx-4 glass-card rounded-2xl shadow-card-hover animate-scale-in">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-          <h2 className="text-lg font-semibold text-dark-100">Installningar</h2>
+          <h2 className="text-lg font-semibold text-dark-100">Inställningar</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg text-dark-400 hover:text-dark-200 hover:bg-white/5 transition-colors"
@@ -56,7 +56,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
                   d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"
                 />
               </svg>
-              API-installningar
+              API-inställningar
             </h3>
             <div className="space-y-3">
               <div>
@@ -93,7 +93,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
               Utseende
             </h3>
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-dark-400">Morkt tema</span>
+              <span className="text-sm text-dark-400">Mörkt tema</span>
               <div className="flex items-center gap-2 text-emerald-500">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -134,7 +134,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
               Om Magister T
             </h3>
             <p className="text-sm text-dark-500 leading-relaxed">
-              Magister T ar din AI-drivna larare som hjalper dig forsta programmering
+              Magister T är din AI-drivna lärare som hjälper dig förstå programmering
               och AI genom att guida dig till svaren - inte ge dem direkt.
             </p>
             <p className="text-xs text-dark-600">
@@ -146,7 +146,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
         {/* Footer */}
         <div className="px-6 py-4 border-t border-white/5">
           <p className="text-xs text-dark-500 text-center">
-            Fler installningar kommer snart
+            Fler inställningar kommer snart
           </p>
         </div>
       </div>

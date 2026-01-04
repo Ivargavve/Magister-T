@@ -38,11 +38,11 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
                   </div>
                 </div>
                 <h2 className="text-2xl font-semibold text-dark-100 mb-3">
-                  Hej! Jag ar Magister T
+                  Hej! Jag är Magister T
                 </h2>
                 <p className="text-dark-400 max-w-md leading-relaxed">
-                  Jag hjalper dig att forsta programmering och AI genom att guida dig
-                  till svaren - inte ge dem direkt. Stall en fraga sa resonerar vi tillsammans!
+                  Jag hjälper dig att förstå programmering och AI genom att guida dig
+                  till svaren - inte ge dem direkt. Ställ en fråga så resonerar vi tillsammans!
                 </p>
               </div>
 
@@ -58,22 +58,22 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
                   onClick={() => onSendMessage('Hur fungerar en for-loop?')}
                 />
                 <SuggestionButton
-                  text="Vad ar skillnaden mellan let och const?"
+                  text="Vad är skillnaden mellan let och const?"
                   icon={
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
                     </svg>
                   }
-                  onClick={() => onSendMessage('Vad ar skillnaden mellan let och const?')}
+                  onClick={() => onSendMessage('Vad är skillnaden mellan let och const?')}
                 />
                 <SuggestionButton
-                  text="Forklara vad en API ar"
+                  text="Förklara vad en API är"
                   icon={
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                     </svg>
                   }
-                  onClick={() => onSendMessage('Forklara vad en API ar')}
+                  onClick={() => onSendMessage('Förklara vad en API är')}
                 />
               </div>
             </div>
@@ -115,7 +115,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
 
       {/* Right side: Magister T Portrait (only visible when there are messages) */}
       {messages.length > 0 && (
-        <div className="hidden lg:flex w-72 xl:w-80 flex-shrink-0 border-l border-white/5 glass">
+        <div className="hidden lg:flex w-72 xl:w-80 flex-shrink-0 border-l border-white/5">
           <MagisterPortrait isThinking={isLoading || isStreaming} />
         </div>
       )}

@@ -36,14 +36,14 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
     <div className="p-4 glass border-t border-white/5">
       <div className="max-w-3xl mx-auto">
         <div className="relative glass-card rounded-2xl px-4 py-3 gradient-border transition-all duration-200 focus-within:shadow-glow">
-          <div className="flex items-end gap-3">
+          <div className="flex items-center gap-3">
             {/* Textarea */}
             <textarea
               ref={textareaRef}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Skriv din fraga har..."
+              placeholder="Skriv din fråga här..."
               disabled={disabled}
               rows={1}
               className="flex-1 bg-transparent text-dark-100 placeholder-dark-500 resize-none text-sm leading-relaxed disabled:opacity-50 focus:outline-none"
@@ -93,11 +93,11 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
         {/* Helper text */}
         <div className="flex items-center justify-center gap-4 mt-3">
           <p className="text-xs text-dark-500">
-            Magister T hjalper dig tanka - inte att fuska!
+            Magister T hjälper dig tänka - inte att fuska!
           </p>
           <span className="text-dark-600">|</span>
           <p className="text-xs text-dark-600">
-            Tryck Enter for att skicka, Shift+Enter for ny rad
+            Tryck Enter för att skicka, Shift+Enter för ny rad
           </p>
         </div>
       </div>

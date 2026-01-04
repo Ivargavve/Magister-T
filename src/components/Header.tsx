@@ -49,7 +49,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
         </div>
         <div>
           <h1 className="text-lg font-semibold text-dark-100">Magister T</h1>
-          <p className="text-xs text-dark-500">AI-assistent for programmering</p>
+          <p className="text-xs text-dark-500">AI-assistent för programmering</p>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
         <button
           onClick={onSettingsClick}
           className="p-2.5 rounded-xl text-dark-400 hover:text-dark-200 hover:bg-white/5 transition-all duration-200"
-          title="Installningar"
+          title="Inställningar"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -88,12 +88,12 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/5 transition-all duration-200"
-              title={user?.name || 'Anvandarmeny'}
+              title={user?.name || 'Användarmeny'}
             >
               {user?.profile_image ? (
                 <img
                   src={user.profile_image}
-                  alt={user.name || 'Anvandare'}
+                  alt={user.name || 'Användare'}
                   className="w-8 h-8 rounded-full object-cover border-2 border-transparent hover:border-emerald-500/50 transition-colors"
                   referrerPolicy="no-referrer"
                 />
@@ -113,7 +113,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
                     {user?.profile_image ? (
                       <img
                         src={user.profile_image}
-                        alt={user.name || 'Anvandare'}
+                        alt={user.name || 'Användare'}
                         className="w-10 h-10 rounded-full object-cover"
                         referrerPolicy="no-referrer"
                       />
@@ -124,7 +124,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-dark-100 truncate">
-                        {user?.name || 'Anvandare'}
+                        {user?.name || 'Användare'}
                       </p>
                       <p className="text-xs text-dark-400 truncate">
                         {user?.email || ''}
