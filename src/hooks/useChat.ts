@@ -93,33 +93,6 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   }, [])
 
   /**
-   * Parses Server-Sent Events from a text chunk
-   */
-  const parseSSE = (text: string): string[] => {
-    const events: string[] = []
-    const lines = text.split('\n')
-
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6)
-        if (data === '[DONE]') {
-          continue
-        }
-        try {
-          const parsed = JSON.parse(data)
-          if (parsed.text) {
-            events.push(parsed.text)
-          }
-        } catch {
-          // Ignore parsing errors for incomplete chunks
-        }
-      }
-    }
-
-    return events
-  }
-
-  /**
    * Creates a new chat for authenticated users
    */
   const createNewChat = async (): Promise<number | null> => {
@@ -220,7 +193,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
             )
           )
         } else {
-          // Guest mode - use the anonymous endpoint
+          // Guest mode - use the anonymous endpoint with real-time streaming
           const currentMessages = messages
           const apiMessages = [...currentMessages, userMessage].map((m) => ({
             role: m.role,
@@ -244,7 +217,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
 
           const contentType = response.headers.get('content-type') || ''
 
-          // Handle JSON response (from Render backend)
+          // Handle JSON response (fallback for non-streaming)
           if (contentType.includes('application/json')) {
             const data = await response.json()
             const responseText = data.response || ''
@@ -257,24 +230,56 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
               )
             )
           } else {
-            // Handle SSE format (from Netlify functions)
-            const text = await response.text()
-            const chunks = parseSSE(text)
+            // Handle SSE streaming in real-time
+            const reader = response.body?.getReader()
+            if (!reader) {
+              throw new Error('No response body')
+            }
 
+            const decoder = new TextDecoder()
             let accumulatedText = ''
+            let buffer = ''
 
-            for (const chunk of chunks) {
-              accumulatedText += chunk
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) break
 
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === assistantMessageId
-                    ? { ...msg, content: accumulatedText }
-                    : msg
-                )
-              )
+              // Decode the chunk and add to buffer
+              buffer += decoder.decode(value, { stream: true })
 
-              await new Promise((resolve) => setTimeout(resolve, 10))
+              // Process complete SSE events from buffer
+              const lines = buffer.split('\n')
+              buffer = lines.pop() || '' // Keep incomplete line in buffer
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6)
+                  if (data === '[DONE]') {
+                    continue
+                  }
+                  try {
+                    const parsed = JSON.parse(data)
+                    if (parsed.text) {
+                      accumulatedText += parsed.text
+
+                      setMessages((prev) =>
+                        prev.map((msg) =>
+                          msg.id === assistantMessageId
+                            ? { ...msg, content: accumulatedText }
+                            : msg
+                        )
+                      )
+                    }
+                    if (parsed.error) {
+                      throw new Error(parsed.error)
+                    }
+                  } catch (e) {
+                    // Ignore JSON parse errors for incomplete chunks
+                    if (e instanceof SyntaxError) continue
+                    throw e
+                  }
+                }
+              }
             }
 
             setMessages((prev) =>

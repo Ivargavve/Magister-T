@@ -76,7 +76,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatsRoutes);
 app.use('/api/users', usersRoutes);
 
-// Legacy endpoint for anonymous chat (backwards compatibility)
+// Streaming endpoint for anonymous chat
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
@@ -109,15 +109,37 @@ app.post('/api/chat', async (req: Request, res: Response) => {
       history: chatHistory,
     });
 
-    const result = await chat.sendMessage(lastMessage.content);
-    const response = result.response;
-    const aiResponseText = response.text();
+    // Set headers for SSE streaming
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
 
-    res.json({ response: aiResponseText });
+    // Use streaming API
+    const result = await chat.sendMessageStream(lastMessage.content);
+
+    // Stream each chunk as it arrives
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      if (chunkText) {
+        res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
+      }
+    }
+
+    // Signal end of stream
+    res.write('data: [DONE]\n\n');
+    res.end();
   } catch (error: any) {
     console.error('Chat error:', error?.message || error);
     console.error('Full error:', JSON.stringify(error, null, 2));
-    res.status(500).json({ error: 'Failed to generate response', details: error?.message });
+
+    // If headers haven't been sent, send error as JSON
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to generate response', details: error?.message });
+    } else {
+      // If streaming has started, send error as SSE
+      res.write(`data: ${JSON.stringify({ error: error?.message || 'Unknown error' })}\n\n`);
+      res.end();
+    }
   }
 });
 
