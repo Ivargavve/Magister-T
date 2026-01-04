@@ -7,6 +7,7 @@ import { useChat, Message } from './hooks/useChat'
 import { useChats } from './hooks/useChats'
 import { useGuestChats } from './hooks/useGuestChats'
 import { useAuth } from './contexts/AuthContext'
+import libraryBackground from './assets/librarybackground.png'
 
 // Re-export Message type for backward compatibility
 export type { Message } from './hooks/useChat'
@@ -29,21 +30,15 @@ function App() {
   // Guest chat management
   const {
     chats: guestChats,
-    groups: guestGroups,
     currentChatId: guestCurrentChatId,
     currentChat: guestCurrentChat,
     createChat: createGuestChat,
     selectChat: selectGuestChat,
     updateChatMessages: updateGuestChatMessages,
     renameChat: renameGuestChat,
-    moveChat: moveGuestChat,
     deleteChat: deleteGuestChat,
     deleteAllChats: deleteAllGuestChats,
     clearCurrentChat: clearGuestCurrentChat,
-    createGroup: createGuestGroup,
-    renameGroup: renameGuestGroup,
-    deleteGroup: deleteGuestGroup,
-    toggleGroupExpanded: toggleGuestGroupExpanded,
   } = useGuestChats()
 
   // Current chat ID state for authenticated users
@@ -180,46 +175,6 @@ function App() {
     // TODO: Add authenticated chat renaming
   }, [isAuthenticated, renameGuestChat])
 
-  // Handle moving a chat to a group
-  const handleMoveChat = useCallback((chatId: number | string, groupId: string | null) => {
-    if (!isAuthenticated && typeof chatId === 'string') {
-      moveGuestChat(chatId, groupId)
-    }
-    // TODO: Add authenticated chat grouping
-  }, [isAuthenticated, moveGuestChat])
-
-  // Handle creating a group
-  const handleCreateGroup = useCallback((name: string) => {
-    if (!isAuthenticated) {
-      createGuestGroup(name)
-    }
-    // TODO: Add authenticated group creation
-  }, [isAuthenticated, createGuestGroup])
-
-  // Handle renaming a group
-  const handleRenameGroup = useCallback((groupId: string, newName: string) => {
-    if (!isAuthenticated) {
-      renameGuestGroup(groupId, newName)
-    }
-    // TODO: Add authenticated group renaming
-  }, [isAuthenticated, renameGuestGroup])
-
-  // Handle deleting a group
-  const handleDeleteGroup = useCallback((groupId: string) => {
-    if (!isAuthenticated) {
-      deleteGuestGroup(groupId)
-    }
-    // TODO: Add authenticated group deletion
-  }, [isAuthenticated, deleteGuestGroup])
-
-  // Handle toggling group expanded/collapsed
-  const handleToggleGroup = useCallback((groupId: string) => {
-    if (!isAuthenticated) {
-      toggleGuestGroupExpanded(groupId)
-    }
-    // TODO: Add authenticated group toggle
-  }, [isAuthenticated, toggleGuestGroupExpanded])
-
   // Handle new chat button
   const handleNewChat = useCallback(() => {
     if (isAuthenticated) {
@@ -229,16 +184,6 @@ function App() {
     }
     clearChat()
   }, [isAuthenticated, clearChat, clearGuestCurrentChat])
-
-  // Handle new chat in a specific group
-  const handleNewChatInGroup = useCallback((groupId: string) => {
-    if (!isAuthenticated) {
-      const newChatId = createGuestChat(groupId)
-      guestChatIdRef.current = newChatId
-      clearChat()
-    }
-    // TODO: Add authenticated chat in group creation
-  }, [isAuthenticated, createGuestChat, clearChat])
 
   // Handle clear all chats from settings
   const handleClearAllChats = useCallback(async () => {
@@ -257,30 +202,15 @@ function App() {
         id: chat.id,
         title: chat.title,
         updatedAt: chat.updatedAt,
-        groupId: null, // TODO: Add group support for authenticated chats
       }))
     } else {
       return guestChats.map(chat => ({
         id: chat.id,
         title: chat.title,
         updatedAt: chat.updatedAt,
-        groupId: chat.groupId || null,
       }))
     }
   }, [isAuthenticated, authChats, guestChats])
-
-  // Unified groups list for sidebar
-  const sidebarGroups = useMemo(() => {
-    if (isAuthenticated) {
-      return [] // TODO: Add group support for authenticated users
-    } else {
-      return guestGroups.map(group => ({
-        id: group.id,
-        name: group.name,
-        isExpanded: group.isExpanded,
-      }))
-    }
-  }, [isAuthenticated, guestGroups])
 
   // Reload auth chats when authentication changes
   useEffect(() => {
@@ -293,36 +223,32 @@ function App() {
   // Show loading spinner while checking auth status
   if (authLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div
+        className="flex h-full items-center justify-center bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${libraryBackground})` }}
+      >
         <div className="text-center animate-fade-in">
           <div className="relative mb-6">
-            <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
-            <div className="relative w-16 h-16 border-4 border-dark-700 border-t-emerald-500 rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-warm-500/20 blur-xl rounded-full" />
+            <div className="relative w-16 h-16 border-4 border-warm-800 border-t-warm-400 rounded-full animate-spin" />
           </div>
-          <p className="text-dark-400 text-sm">Laddar...</p>
+          <p className="text-parchment-200 text-sm">Laddar...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-[#2a1f1a]">
       {/* Left Sidebar - Chat History */}
       <Sidebar
         onNewChat={handleNewChat}
-        onNewChatInGroup={handleNewChatInGroup}
         onSelectChat={handleSelectChat}
         onDeleteChat={handleDeleteChat}
         onRenameChat={handleRenameChat}
-        onMoveChat={handleMoveChat}
         chats={sidebarChats}
         currentChatId={currentChatId}
         isLoadingChats={isAuthenticated ? isLoadingAuthChats : false}
-        groups={sidebarGroups}
-        onCreateGroup={handleCreateGroup}
-        onRenameGroup={handleRenameGroup}
-        onDeleteGroup={handleDeleteGroup}
-        onToggleGroup={handleToggleGroup}
         onSettingsClick={() => setShowSettings(true)}
         onLoginClick={() => setShowLogin(true)}
       />
@@ -352,7 +278,7 @@ function App() {
           <div className="relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowLogin(false)}
-              className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-dark-800/80 text-dark-400 hover:text-dark-100 hover:bg-dark-700 transition-colors"
+              className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-warm-900/80 text-parchment-200 hover:text-parchment-100 hover:bg-warm-800 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

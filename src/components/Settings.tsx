@@ -23,13 +23,13 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 glass-card rounded-2xl shadow-card-hover animate-scale-in">
+      <div className="relative w-full max-w-md mx-4 paper-card rounded-2xl shadow-card-hover animate-scale-in">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-          <h2 className="text-lg font-semibold text-dark-100">Inställningar</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-warm-300/30">
+          <h2 className="text-lg font-semibold text-gray-900">Inställningar</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-dark-400 hover:text-dark-200 hover:bg-white/5 transition-colors"
+            className="p-2 rounded-lg text-gray-600 hover:text-gray-800 hover:bg-gray-200/50 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -52,7 +52,7 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
         <div className="px-6 py-6 space-y-6">
           {/* Data Management Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-dark-300 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -73,7 +73,7 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
               {!showConfirmDelete ? (
                 <button
                   onClick={() => setShowConfirmDelete(true)}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-600 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <svg
@@ -109,7 +109,7 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
                 </button>
               ) : (
                 <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 space-y-3">
-                  <p className="text-sm text-red-400">
+                  <p className="text-sm text-red-600">
                     Är du säker? Detta kommer radera all din chatthistorik permanent.
                   </p>
                   <div className="flex gap-2">
@@ -121,7 +121,7 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
                     </button>
                     <button
                       onClick={() => setShowConfirmDelete(false)}
-                      className="flex-1 px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 text-dark-200 text-sm font-medium transition-colors"
+                      className="flex-1 px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-medium transition-colors"
                     >
                       Avbryt
                     </button>
@@ -133,7 +133,7 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
 
           {/* About Section */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-dark-300 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -150,11 +150,10 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
               </svg>
               Om Magister T
             </h3>
-            <p className="text-sm text-dark-500 leading-relaxed">
-              Magister T är din AI-drivna lärare som hjälper dig förstå programmering
-              och AI genom att guida dig till svaren - inte ge dem direkt.
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Magister T är din AI-drivna lärare som hjälper dig förstå programmering och AI.
             </p>
-            <p className="text-xs text-dark-600">
+            <p className="text-xs text-gray-600">
               Version 1.0.0
             </p>
           </div>

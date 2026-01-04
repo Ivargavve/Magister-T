@@ -43,7 +43,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
   return (
     <div className="p-4">
       <div className="max-w-3xl mx-auto">
-        <div className="relative backdrop-blur-md bg-white/5 px-4 py-3 rounded-2xl border border-white/10">
+        <div className="relative bg-black/40 backdrop-blur-sm px-4 py-3 rounded-2xl">
           <div className="flex items-center gap-3">
             <textarea
               ref={textareaRef}
@@ -54,14 +54,14 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
               disabled={disabled}
               autoFocus
               rows={1}
-              className="flex-1 bg-transparent text-dark-100 placeholder-dark-500 resize-none text-sm leading-relaxed disabled:opacity-50 focus:outline-none"
+              className="flex-1 bg-transparent text-parchment-100 placeholder-parchment-400 resize-none text-sm leading-relaxed disabled:opacity-50 focus:outline-none"
             />
 
             <div className="flex items-center gap-2">
               {isStreaming ? (
                 <button
                   onClick={onStopStreaming}
-                  className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 transition-colors"
+                  className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-500 transition-colors"
                   title="Stoppa generering"
                 >
                   <svg
@@ -81,7 +81,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
                 <button
                   onClick={handleSubmit}
                   disabled={disabled || !value.trim()}
-                  className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors"
+                  className="p-2.5 rounded-xl bg-magister-500 hover:bg-magister-400 disabled:opacity-40 disabled:hover:bg-magister-500 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

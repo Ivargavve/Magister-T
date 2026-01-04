@@ -1,82 +1,50 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import chatHistoryPaper from '../assets/chathistorypaper.png'
+import sidebarBackground from '../assets/sidebarbackground.png'
 
 interface ChatItem {
   id: number | string
   title: string
   updatedAt: string
-  groupId?: string | null
-}
-
-interface GroupItem {
-  id: string
-  name: string
-  isExpanded: boolean
 }
 
 interface SidebarProps {
   onNewChat: () => void
-  onNewChatInGroup?: (groupId: string) => void
   onSelectChat?: (chatId: number | string) => void
   onDeleteChat?: (chatId: number | string) => void
   onRenameChat?: (chatId: number | string, newTitle: string) => void
-  onMoveChat?: (chatId: number | string, groupId: string | null) => void
   chats?: ChatItem[]
   currentChatId?: number | string | null
   isLoadingChats?: boolean
-  // Group props
-  groups?: GroupItem[]
-  onCreateGroup?: (name: string) => void
-  onRenameGroup?: (groupId: string, newName: string) => void
-  onDeleteGroup?: (groupId: string) => void
-  onToggleGroup?: (groupId: string) => void
-  // Settings and login
   onSettingsClick?: () => void
   onLoginClick?: () => void
 }
 
 function Sidebar({
   onNewChat,
-  onNewChatInGroup,
   onSelectChat,
   onDeleteChat,
   onRenameChat,
-  onMoveChat,
   chats = [],
   currentChatId,
   isLoadingChats,
-  groups = [],
-  onCreateGroup,
-  onRenameGroup,
-  onDeleteGroup,
-  onToggleGroup,
   onSettingsClick,
   onLoginClick,
 }: SidebarProps) {
   const { isAuthenticated, user, logout } = useAuth()
   const [menuOpenId, setMenuOpenId] = useState<number | string | null>(null)
-  const [groupMenuOpenId, setGroupMenuOpenId] = useState<string | null>(null)
   const [editingChatId, setEditingChatId] = useState<number | string | null>(null)
-  const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
-  const [showNewGroupInput, setShowNewGroupInput] = useState(false)
-  const [newGroupName, setNewGroupName] = useState('')
   const editInputRef = useRef<HTMLInputElement>(null)
-  const newGroupInputRef = useRef<HTMLInputElement>(null)
 
   // Focus input when editing
   useEffect(() => {
-    if (editingChatId || editingGroupId) {
+    if (editingChatId) {
       editInputRef.current?.focus()
       editInputRef.current?.select()
     }
-  }, [editingChatId, editingGroupId])
-
-  useEffect(() => {
-    if (showNewGroupInput) {
-      newGroupInputRef.current?.focus()
-    }
-  }, [showNewGroupInput])
+  }, [editingChatId])
 
   // Format relative time
   const formatRelativeTime = (dateString: string) => {
@@ -97,13 +65,6 @@ function Sidebar({
   const handleMenuClick = (e: React.MouseEvent, chatId: number | string) => {
     e.stopPropagation()
     setMenuOpenId(menuOpenId === chatId ? null : chatId)
-    setGroupMenuOpenId(null)
-  }
-
-  const handleGroupMenuClick = (e: React.MouseEvent, groupId: string) => {
-    e.stopPropagation()
-    setGroupMenuOpenId(groupMenuOpenId === groupId ? null : groupId)
-    setMenuOpenId(null)
   }
 
   const handleDelete = (e: React.MouseEvent, chatId: number | string) => {
@@ -119,13 +80,6 @@ function Sidebar({
     setMenuOpenId(null)
   }
 
-  const handleStartRenameGroup = (e: React.MouseEvent, groupId: string, currentName: string) => {
-    e.stopPropagation()
-    setEditingGroupId(groupId)
-    setEditValue(currentName)
-    setGroupMenuOpenId(null)
-  }
-
   const handleRenameSubmit = (chatId: number | string) => {
     if (editValue.trim()) {
       onRenameChat?.(chatId, editValue.trim())
@@ -134,41 +88,24 @@ function Sidebar({
     setEditValue('')
   }
 
-  const handleRenameGroupSubmit = (groupId: string) => {
-    if (editValue.trim()) {
-      onRenameGroup?.(groupId, editValue.trim())
-    }
-    setEditingGroupId(null)
-    setEditValue('')
-  }
-
-  const handleDeleteGroup = (e: React.MouseEvent, groupId: string) => {
-    e.stopPropagation()
-    onDeleteGroup?.(groupId)
-    setGroupMenuOpenId(null)
-  }
-
-  const handleCreateGroup = () => {
-    if (newGroupName.trim()) {
-      onCreateGroup?.(newGroupName.trim())
-      setNewGroupName('')
-      setShowNewGroupInput(false)
-    }
-  }
-
   const handleBackdropClick = () => {
     setMenuOpenId(null)
-    setGroupMenuOpenId(null)
   }
 
-  // Get ungrouped chats
-  const ungroupedChats = chats.filter(chat => !chat.groupId)
+  // Get index for alternating rotation
+  const getChatIndex = (chatId: number | string) => {
+    return chats.findIndex(c => c.id === chatId)
+  }
 
   // Render a chat item
-  const renderChatItem = (chat: ChatItem) => (
+  const renderChatItem = (chat: ChatItem) => {
+    const index = getChatIndex(chat.id)
+    const rotation = index % 2 === 0 ? 'rotate-3' : '-rotate-3'
+
+    return (
     <div key={chat.id} className="relative group">
       {editingChatId === chat.id ? (
-        <div className="px-3 py-2">
+        <div className="px-2 py-1">
           <input
             ref={editInputRef}
             type="text"
@@ -182,64 +119,36 @@ function Sidebar({
                 setEditValue('')
               }
             }}
-            className="w-full px-2 py-1 text-sm bg-dark-700 border border-emerald-500 rounded text-dark-100 focus:outline-none"
+            className="w-full px-2 py-1 text-sm bg-parchment-100 rounded text-warm-900 focus:outline-none"
           />
         </div>
       ) : (
         <button
           onClick={() => onSelectChat?.(chat.id)}
-          className={`w-full text-left px-3 py-2.5 rounded-lg transition-all duration-200 ${
-            currentChatId === chat.id
-              ? 'bg-emerald-500/10 border border-emerald-500/20'
-              : 'hover:bg-dark-700/50'
+          style={{ backgroundImage: `url(${chatHistoryPaper})`, backgroundSize: '100% 100%' }}
+          className={`w-full text-left rounded-md transition-all duration-200 shadow-md hover:shadow-lg hover:scale-[1.02] min-h-[110px] text-warm-950 ${rotation} ${
+            currentChatId === chat.id ? 'scale-[1.03] shadow-lg' : ''
           }`}
         >
-          <div className="flex items-start gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                currentChatId === chat.id ? 'text-emerald-400' : 'text-dark-500'
-              }`}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"
-              />
-            </svg>
-            <div className="flex-1 min-w-0 pr-6">
-              <p
-                className={`text-sm truncate ${
-                  currentChatId === chat.id ? 'text-emerald-400 font-medium' : 'text-dark-300'
-                }`}
-              >
+          <div className="px-6 py-5 flex items-center justify-between h-full">
+            <div className="flex-1 min-w-0 pr-2">
+              <p className="text-sm font-bold truncate" style={{ color: '#6d4f36' }}>
                 {chat.title}
               </p>
-              <p className="text-xs text-dark-500 mt-0.5">
+              <p className="text-xs mt-1" style={{ color: '#6d4f36' }}>
                 {formatRelativeTime(chat.updatedAt)}
               </p>
             </div>
+            {/* Clip/link icon - click for menu */}
+            <div
+              onClick={(e) => handleMenuClick(e, chat.id)}
+              className="flex-shrink-0 w-7 h-7 rounded-full bg-warm-800/10 hover:bg-warm-800/25 flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#6d4f36" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+              </svg>
+            </div>
           </div>
-        </button>
-      )}
-
-      {/* 3-dot menu button */}
-      {editingChatId !== chat.id && (
-        <button
-          onClick={(e) => handleMenuClick(e, chat.id)}
-          className={`absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-all duration-200 ${
-            menuOpenId === chat.id
-              ? 'bg-dark-600 text-dark-200'
-              : 'opacity-0 group-hover:opacity-100 hover:bg-dark-600 text-dark-400 hover:text-dark-200'
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-          </svg>
         </button>
       )}
 
@@ -247,48 +156,20 @@ function Sidebar({
       {menuOpenId === chat.id && (
         <>
           <div className="fixed inset-0 z-10" onClick={handleBackdropClick} />
-          <div className="absolute right-0 top-full mt-1 z-20 bg-dark-700 border border-dark-600 rounded-lg shadow-lg py-1 min-w-[160px]">
+          <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-xl py-1 min-w-[140px] border border-warm-200">
             <button
               onClick={(e) => handleStartRename(e, chat.id, chat.title)}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-dark-200 hover:bg-dark-600 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
               </svg>
               Byt namn
             </button>
-            {groups.length > 0 && (
-              <div className="border-t border-dark-600 my-1">
-                <p className="px-3 py-1 text-xs text-dark-500">Flytta till grupp</p>
-                {chat.groupId && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onMoveChat?.(chat.id, null); setMenuOpenId(null); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-dark-200 hover:bg-dark-600 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Ingen grupp
-                  </button>
-                )}
-                {groups.filter(g => g.id !== chat.groupId).map(group => (
-                  <button
-                    key={group.id}
-                    onClick={(e) => { e.stopPropagation(); onMoveChat?.(chat.id, group.id); setMenuOpenId(null); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-dark-200 hover:bg-dark-600 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                    </svg>
-                    {group.name}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className="border-t border-dark-600 mt-1 pt-1">
+            <div className="border-t border-warm-100 mt-1 pt-1">
               <button
                 onClick={(e) => handleDelete(e, chat.id)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-dark-600 transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -301,256 +182,110 @@ function Sidebar({
       )}
     </div>
   )
+  }
 
   return (
-    <aside className="w-64 h-full flex flex-col glass border-r border-white/5">
+    <aside
+      className="w-64 h-full flex flex-col bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${sidebarBackground})` }}
+    >
       {/* New chat button */}
-      <div className="p-4 space-y-2">
+      <div className="px-4 pt-4 pb-2">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-all duration-200 hover-lift glow-emerald"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-warm-500/50 text-warm-300 hover:text-warm-100 hover:border-warm-400 hover:bg-warm-800/30 transition-all duration-200"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          <span>Ny chatt</span>
+          <span className="text-sm">Ny chatt</span>
         </button>
-
-        {/* New group button */}
-        {showNewGroupInput ? (
-          <div className="flex gap-2">
-            <input
-              ref={newGroupInputRef}
-              type="text"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateGroup()
-                if (e.key === 'Escape') {
-                  setShowNewGroupInput(false)
-                  setNewGroupName('')
-                }
-              }}
-              placeholder="Gruppnamn..."
-              className="flex-1 px-3 py-2 text-sm bg-dark-700 border border-dark-600 rounded-lg text-dark-100 placeholder-dark-500 focus:outline-none focus:border-emerald-500"
-            />
-            <button
-              onClick={handleCreateGroup}
-              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowNewGroupInput(true)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-dark-600 text-dark-400 hover:text-dark-200 hover:border-dark-500 transition-all duration-200"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-            </svg>
-            <span className="text-sm">Ny grupp</span>
-          </button>
-        )}
       </div>
 
       {/* Chat history section */}
       <div className="flex-1 overflow-y-auto px-3 pb-4">
-        <div className="mb-3">
-          <h3 className="px-3 text-xs font-semibold text-dark-500 uppercase tracking-wider">
-            Chatthistorik
-          </h3>
-        </div>
+        <h3 className="text-center text-sm font-medium text-warm-300 mb-3 font-serif">
+          Tidigare Chattar
+        </h3>
 
         {isLoadingChats ? (
           <div className="flex items-center justify-center py-8">
-            <div className="w-5 h-5 border-2 border-dark-600 border-t-emerald-500 rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-warm-700 border-t-warm-400 rounded-full animate-spin" />
           </div>
         ) : (
-          <nav className="space-y-1">
-            {/* Groups */}
-            {groups.map((group) => {
-              const groupChats = chats.filter(chat => chat.groupId === group.id)
-              return (
-                <div key={group.id} className="mb-2">
-                  {/* Group header */}
-                  <div className="relative group/header">
-                    {editingGroupId === group.id ? (
-                      <div className="px-2 py-1">
-                        <input
-                          ref={editInputRef}
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onBlur={() => handleRenameGroupSubmit(group.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleRenameGroupSubmit(group.id)
-                            if (e.key === 'Escape') {
-                              setEditingGroupId(null)
-                              setEditValue('')
-                            }
-                          }}
-                          className="w-full px-2 py-1 text-sm bg-dark-700 border border-emerald-500 rounded text-dark-100 focus:outline-none"
-                        />
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => onToggleGroup?.(group.id)}
-                        className="w-full flex items-center gap-2 px-3 py-2 pr-10 rounded-lg hover:bg-dark-700/50 transition-colors"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className={`w-4 h-4 text-dark-400 transition-transform ${group.isExpanded ? 'rotate-90' : ''}`}
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-amber-500">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-                        </svg>
-                        <span className="text-sm font-medium text-dark-300 flex-1 text-left truncate">{group.name}</span>
-                        <span className="text-xs text-dark-500 mr-2">{groupChats.length}</span>
-                      </button>
-                    )}
-
-                    {/* Group menu button */}
-                    {editingGroupId !== group.id && (
-                      <button
-                        onClick={(e) => handleGroupMenuClick(e, group.id)}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md transition-all duration-200 ${
-                          groupMenuOpenId === group.id
-                            ? 'bg-dark-600 text-dark-200'
-                            : 'opacity-0 group-hover/header:opacity-100 hover:bg-dark-600 text-dark-400 hover:text-dark-200'
-                        }`}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                        </svg>
-                      </button>
-                    )}
-
-                    {/* Group dropdown menu */}
-                    {groupMenuOpenId === group.id && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={handleBackdropClick} />
-                        <div className="absolute right-0 top-full mt-1 z-20 bg-dark-700 border border-dark-600 rounded-lg shadow-lg py-1 min-w-[160px]">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onNewChatInGroup?.(group.id); setGroupMenuOpenId(null); }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-400 hover:bg-dark-600 transition-colors"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                            Ny chatt
-                          </button>
-                          <div className="border-t border-dark-600 my-1" />
-                          <button
-                            onClick={(e) => handleStartRenameGroup(e, group.id, group.name)}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-dark-200 hover:bg-dark-600 transition-colors"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                            </svg>
-                            Byt namn
-                          </button>
-                          <button
-                            onClick={(e) => handleDeleteGroup(e, group.id)}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-dark-600 transition-colors"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                            </svg>
-                            Ta bort
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Group chats */}
-                  {group.isExpanded && (
-                    <div className="ml-4 mt-1 space-y-0.5 border-l border-dark-700 pl-2">
-                      {groupChats.length > 0 ? (
-                        groupChats.map(renderChatItem)
-                      ) : (
-                        <p className="px-3 py-2 text-xs text-dark-500 italic">Inga chattar i gruppen</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-
-            {/* Ungrouped chats */}
-            {ungroupedChats.length > 0 ? (
-              ungroupedChats.map(renderChatItem)
-            ) : groups.length === 0 ? (
-              <p className="px-3 py-4 text-sm text-dark-500 text-center">
+          <nav className="space-y-2">
+            {chats.length > 0 ? (
+              chats.map(renderChatItem)
+            ) : (
+              <p className="px-3 py-4 text-sm text-warm-400 text-center">
                 Inga sparade chattar än
               </p>
-            ) : null}
+            )}
           </nav>
         )}
       </div>
 
       {/* Footer - Settings and Profile */}
-      <div className="p-3 border-t border-white/5 space-y-2">
-        {/* Settings button */}
-        <button
-          onClick={onSettingsClick}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-dark-400 hover:text-dark-200 hover:bg-white/5 transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span className="text-sm">Inställningar</span>
-        </button>
-
-        {/* User profile or login */}
-        {isAuthenticated ? (
-          <div className="flex items-center gap-3 px-3 py-2">
-            {user?.profile_image ? (
-              <img
-                src={user.profile_image}
-                alt={user.name || 'Användare'}
-                className="w-8 h-8 rounded-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-dark-600 flex items-center justify-center text-dark-200 text-sm font-medium">
-                {user?.name?.[0] || '?'}
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-dark-200 truncate">{user?.name}</p>
-            </div>
-            <button
-              onClick={logout}
-              className="p-1.5 rounded-lg text-dark-500 hover:text-dark-200 hover:bg-white/5 transition-colors"
-              title="Logga ut"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-              </svg>
-            </button>
-          </div>
-        ) : (
+      <div className="p-3 space-y-2">
+        <div className="bg-black/20 backdrop-blur-sm rounded-xl p-2 space-y-1">
+          {/* Settings button */}
           <button
-            onClick={onLoginClick}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-dark-400 hover:text-dark-200 hover:bg-white/5 transition-colors"
+            onClick={onSettingsClick}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-warm-300 hover:text-warm-100 hover:bg-warm-800/50 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span className="text-sm">Logga in</span>
+            <span className="text-sm">Inställningar</span>
           </button>
-        )}
+
+          {/* User profile or login */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3 px-3 py-2.5">
+              {user?.profile_image ? (
+                <img
+                  src={user.profile_image}
+                  alt={user.name || 'Användare'}
+                  className="w-8 h-8 rounded-full object-cover border-2 border-warm-500"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-warm-600 flex items-center justify-center text-warm-200 text-sm font-medium">
+                  {user?.name?.[0] || '?'}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-warm-200 truncate">{user?.name}</p>
+              </div>
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-lg text-warm-400 hover:text-warm-200 hover:bg-warm-800/50 transition-colors"
+                title="Logga ut"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onLoginClick}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-warm-300 hover:text-warm-100 hover:bg-warm-800/50 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <span className="text-sm">Logga in</span>
+            </button>
+          )}
+        </div>
+
+        {/* Version info */}
+        <div className="text-center pt-1">
+          <p className="text-[10px] text-warm-500">v1.0 • Jan 2026</p>
+          <p className="text-[9px] text-warm-600">Personifiering av Markus Tångring</p>
+        </div>
       </div>
     </aside>
   )

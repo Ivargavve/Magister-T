@@ -15,7 +15,7 @@ function MagisterSmallAvatar({ isThinking = false }: MagisterSmallAvatarProps) {
       }`}
     >
       {/* Subtle glow background */}
-      <div className="absolute inset-0 bg-emerald-500/20 blur-sm" />
+      <div className="absolute inset-0 bg-magister-500/20 blur-sm" />
 
       {/* Portrait image */}
       <img

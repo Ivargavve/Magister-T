@@ -80,11 +80,11 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
                 <img
                   src={user.profile_image}
                   alt={user.name || 'Användare'}
-                  className="w-8 h-8 rounded-full object-cover border-2 border-transparent hover:border-emerald-500/50 transition-colors"
+                  className="w-8 h-8 rounded-full object-cover border-2 border-transparent hover:border-magister-500/50 transition-colors"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-dark-600 flex items-center justify-center text-dark-200 text-sm font-medium border-2 border-transparent hover:border-emerald-500/50 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-dark-600 flex items-center justify-center text-dark-200 text-sm font-medium border-2 border-transparent hover:border-magister-500/50 transition-colors">
                   {getUserInitials()}
                 </div>
               )}
@@ -148,7 +148,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
         ) : (
           <button
             onClick={onLoginClick}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white text-sm font-medium transition-all duration-200 hover-lift shadow-glow"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-magister-500 to-magister-600 hover:from-magister-400 hover:to-magister-500 text-white text-sm font-medium transition-all duration-200 hover-lift shadow-glow"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
