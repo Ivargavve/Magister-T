@@ -1,0 +1,7 @@
+# Lägg till Magister T-bilderna här:
+# - frame-1.png (idle/neutral)
+# - frame-2.png (tänker)
+# - frame-3.png (pratar/förklarar)
+#
+# Bilderna bör vara kvadratiska (t.ex. 200x200px) med transparent bakgrund.
+# Uppdatera sedan MagisterAvatar.tsx för att använda bilderna.
