@@ -16,6 +16,7 @@ interface GroupItem {
 
 interface SidebarProps {
   onNewChat: () => void
+  onNewChatInGroup?: (groupId: string) => void
   onSelectChat?: (chatId: number | string) => void
   onDeleteChat?: (chatId: number | string) => void
   onRenameChat?: (chatId: number | string, newTitle: string) => void
@@ -33,6 +34,7 @@ interface SidebarProps {
 
 function Sidebar({
   onNewChat,
+  onNewChatInGroup,
   onSelectChat,
   onDeleteChat,
   onRenameChat,
@@ -391,7 +393,7 @@ function Sidebar({
                     ) : (
                       <button
                         onClick={() => onToggleGroup?.(group.id)}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-dark-700/50 transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 pr-10 rounded-lg hover:bg-dark-700/50 transition-colors"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -407,7 +409,7 @@ function Sidebar({
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
                         </svg>
                         <span className="text-sm font-medium text-dark-300 flex-1 text-left truncate">{group.name}</span>
-                        <span className="text-xs text-dark-500">{groupChats.length}</span>
+                        <span className="text-xs text-dark-500 mr-2">{groupChats.length}</span>
                       </button>
                     )}
 
@@ -431,7 +433,17 @@ function Sidebar({
                     {groupMenuOpenId === group.id && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={handleBackdropClick} />
-                        <div className="absolute right-0 top-full mt-1 z-20 bg-dark-700 border border-dark-600 rounded-lg shadow-lg py-1 min-w-[140px]">
+                        <div className="absolute right-0 top-full mt-1 z-20 bg-dark-700 border border-dark-600 rounded-lg shadow-lg py-1 min-w-[160px]">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onNewChatInGroup?.(group.id); setGroupMenuOpenId(null); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-400 hover:bg-dark-600 transition-colors"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Ny chatt
+                          </button>
+                          <div className="border-t border-dark-600 my-1" />
                           <button
                             onClick={(e) => handleStartRenameGroup(e, group.id, group.name)}
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-dark-200 hover:bg-dark-600 transition-colors"

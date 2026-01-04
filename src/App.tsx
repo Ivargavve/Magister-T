@@ -231,6 +231,16 @@ function App() {
     clearChat()
   }, [isAuthenticated, clearChat, clearGuestCurrentChat])
 
+  // Handle new chat in a specific group
+  const handleNewChatInGroup = useCallback((groupId: string) => {
+    if (!isAuthenticated) {
+      const newChatId = createGuestChat(groupId)
+      guestChatIdRef.current = newChatId
+      clearChat()
+    }
+    // TODO: Add authenticated chat in group creation
+  }, [isAuthenticated, createGuestChat, clearChat])
+
   // Handle clear all chats from settings
   const handleClearAllChats = useCallback(async () => {
     if (isAuthenticated) {
@@ -301,6 +311,7 @@ function App() {
       {/* Left Sidebar - Chat History */}
       <Sidebar
         onNewChat={handleNewChat}
+        onNewChatInGroup={handleNewChatInGroup}
         onSelectChat={handleSelectChat}
         onDeleteChat={handleDeleteChat}
         onRenameChat={handleRenameChat}
