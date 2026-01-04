@@ -20,7 +20,6 @@ const MIN_IDEA_TIME = 1500
 function MagisterPortrait({ isThinking = false, isResponding = false, showWink = false }: MagisterPortraitProps) {
   const [currentOriginal, setCurrentOriginal] = useState<1 | 2>(1)
   const [avatarState, setAvatarState] = useState<AvatarState>('idle')
-  const [isTransitioning, setIsTransitioning] = useState(false)
   const winkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ideaTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const readingStartTimeRef = useRef<number>(0)
@@ -104,11 +103,7 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
       // Random interval between 5-20 seconds
       const interval = Math.random() * 15000 + 5000
       return setTimeout(() => {
-        setIsTransitioning(true)
-        setTimeout(() => {
-          setCurrentOriginal(prev => prev === 1 ? 2 : 1)
-          setIsTransitioning(false)
-        }, 150) // Short fade transition
+        setCurrentOriginal(prev => prev === 1 ? 2 : 1)
         scheduleSwitch()
       }, interval)
     }
@@ -134,7 +129,7 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
 
   return (
     <div className="flex items-center justify-center h-full p-6">
-      <div className={`w-64 h-64 transition-opacity duration-150 ${isTransitioning ? 'opacity-80' : 'opacity-100'}`}>
+      <div className="w-64 h-64">
         <img
           src={getCurrentImage()}
           alt="Magister T"
