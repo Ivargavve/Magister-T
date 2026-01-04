@@ -66,10 +66,20 @@ CREATE TABLE IF NOT EXISTS user_settings (
   UNIQUE(user_id)
 );
 
+-- Chat groups table
+CREATE TABLE IF NOT EXISTS chat_groups (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL DEFAULT 'Ny grupp',
+  is_expanded BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Chats table
 CREATE TABLE IF NOT EXISTS chats (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  group_id INTEGER REFERENCES chat_groups(id) ON DELETE SET NULL,
   title VARCHAR(255) NOT NULL DEFAULT 'Ny konversation',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -86,6 +96,8 @@ CREATE TABLE IF NOT EXISTS messages (
 
 -- Indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_chats_user_id ON chats(user_id);
+CREATE INDEX IF NOT EXISTS idx_chats_group_id ON chats(group_id);
+CREATE INDEX IF NOT EXISTS idx_chat_groups_user_id ON chat_groups(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
 CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -119,11 +131,27 @@ CREATE TRIGGER update_chats_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 `;
 
+// Migration to add group_id column to existing chats table
+const migration = `
+-- Add group_id column to chats if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'chats' AND column_name = 'group_id') THEN
+    ALTER TABLE chats ADD COLUMN group_id INTEGER REFERENCES chat_groups(id) ON DELETE SET NULL;
+    CREATE INDEX IF NOT EXISTS idx_chats_group_id ON chats(group_id);
+  END IF;
+END $$;
+`;
+
 // Initialize database schema
 export async function initializeDatabase(): Promise<void> {
   try {
     await pool.query(schema);
     console.log('Database schema initialized successfully');
+
+    // Run migrations
+    await pool.query(migration);
+    console.log('Database migrations completed');
   } catch (error) {
     console.error('Failed to initialize database schema:', error);
     throw error;
@@ -195,10 +223,71 @@ export async function updateUser(
   return users[0] || null;
 }
 
+// Chat group operations
+export interface ChatGroup {
+  id: number;
+  user_id: number;
+  name: string;
+  is_expanded: boolean;
+  created_at: Date;
+}
+
+export async function getGroupsForUser(userId: number): Promise<ChatGroup[]> {
+  return query<ChatGroup>(
+    'SELECT * FROM chat_groups WHERE user_id = $1 ORDER BY created_at ASC',
+    [userId]
+  );
+}
+
+export async function createGroup(userId: number, name?: string): Promise<ChatGroup> {
+  const groups = await query<ChatGroup>(
+    'INSERT INTO chat_groups (user_id, name) VALUES ($1, $2) RETURNING *',
+    [userId, name || 'Ny grupp']
+  );
+  return groups[0];
+}
+
+export async function updateGroup(
+  groupId: number,
+  userId: number,
+  updates: Partial<Pick<ChatGroup, 'name' | 'is_expanded'>>
+): Promise<ChatGroup | null> {
+  const setClauses: string[] = [];
+  const values: unknown[] = [];
+  let paramIndex = 1;
+
+  if (updates.name !== undefined) {
+    setClauses.push(`name = $${paramIndex++}`);
+    values.push(updates.name);
+  }
+  if (updates.is_expanded !== undefined) {
+    setClauses.push(`is_expanded = $${paramIndex++}`);
+    values.push(updates.is_expanded);
+  }
+
+  if (setClauses.length === 0) return null;
+
+  values.push(groupId, userId);
+  const groups = await query<ChatGroup>(
+    `UPDATE chat_groups SET ${setClauses.join(', ')} WHERE id = $${paramIndex++} AND user_id = $${paramIndex} RETURNING *`,
+    values
+  );
+  return groups[0] || null;
+}
+
+export async function deleteGroup(groupId: number, userId: number): Promise<boolean> {
+  const result = await query(
+    'DELETE FROM chat_groups WHERE id = $1 AND user_id = $2 RETURNING id',
+    [groupId, userId]
+  );
+  return result.length > 0;
+}
+
 // Chat operations
 export interface Chat {
   id: number;
   user_id: number;
+  group_id: number | null;
   title: string;
   created_at: Date;
   updated_at: Date;
@@ -219,12 +308,20 @@ export async function getChatById(chatId: number, userId: number): Promise<Chat 
   return chats[0] || null;
 }
 
-export async function createChat(userId: number, title?: string): Promise<Chat> {
+export async function createChat(userId: number, title?: string, groupId?: number | null): Promise<Chat> {
   const chats = await query<Chat>(
-    'INSERT INTO chats (user_id, title) VALUES ($1, $2) RETURNING *',
-    [userId, title || 'Ny konversation']
+    'INSERT INTO chats (user_id, title, group_id) VALUES ($1, $2, $3) RETURNING *',
+    [userId, title || 'Ny konversation', groupId || null]
   );
   return chats[0];
+}
+
+export async function moveChatToGroup(chatId: number, userId: number, groupId: number | null): Promise<Chat | null> {
+  const chats = await query<Chat>(
+    'UPDATE chats SET group_id = $1 WHERE id = $2 AND user_id = $3 RETURNING *',
+    [groupId, chatId, userId]
+  );
+  return chats[0] || null;
 }
 
 export async function updateChatTitle(chatId: number, userId: number, title: string): Promise<Chat | null> {

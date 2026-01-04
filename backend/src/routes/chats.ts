@@ -6,8 +6,13 @@ import {
   createChat,
   updateChatTitle,
   deleteChat,
+  moveChatToGroup,
   getMessagesForChat,
   addMessage,
+  getGroupsForUser,
+  createGroup,
+  updateGroup,
+  deleteGroup,
 } from '../db';
 import { requireAuth, optionalAuth } from '../middleware/auth';
 import { MAGISTER_T_SYSTEM_PROMPT } from '../lib/prompt';
@@ -22,13 +27,21 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
   try {
     const userId = req.userId!;
     const chats = await getChatsForUser(userId);
+    const groups = await getGroupsForUser(userId);
 
     res.json({
       chats: chats.map((chat) => ({
         id: chat.id,
         title: chat.title,
+        groupId: chat.group_id,
         createdAt: chat.created_at,
         updatedAt: chat.updated_at,
+      })),
+      groups: groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        isExpanded: group.is_expanded,
+        createdAt: group.created_at,
       })),
     });
   } catch (error) {
@@ -41,13 +54,14 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
 router.post('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.userId!;
-    const { title } = req.body;
+    const { title, groupId } = req.body;
 
-    const chat = await createChat(userId, title);
+    const chat = await createChat(userId, title, groupId);
 
     res.status(201).json({
       id: chat.id,
       title: chat.title,
+      groupId: chat.group_id,
       createdAt: chat.created_at,
       updatedAt: chat.updated_at,
     });
@@ -150,6 +164,113 @@ router.delete('/:id', requireAuth, async (req: Request, res: Response): Promise<
   } catch (error) {
     console.error('Delete chat error:', error);
     res.status(500).json({ error: 'Failed to delete chat' });
+  }
+});
+
+// PUT /api/chats/:id/move - Move chat to a group
+router.put('/:id/move', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId!;
+    const chatId = parseInt(req.params.id, 10);
+    const { groupId } = req.body;
+
+    if (isNaN(chatId)) {
+      res.status(400).json({ error: 'Invalid chat ID' });
+      return;
+    }
+
+    const chat = await moveChatToGroup(chatId, userId, groupId || null);
+    if (!chat) {
+      res.status(404).json({ error: 'Chat not found' });
+      return;
+    }
+
+    res.json({
+      id: chat.id,
+      title: chat.title,
+      groupId: chat.group_id,
+      createdAt: chat.created_at,
+      updatedAt: chat.updated_at,
+    });
+  } catch (error) {
+    console.error('Move chat error:', error);
+    res.status(500).json({ error: 'Failed to move chat' });
+  }
+});
+
+// ========== GROUP ROUTES ==========
+
+// POST /api/chats/groups - Create new group
+router.post('/groups', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId!;
+    const { name } = req.body;
+
+    const group = await createGroup(userId, name);
+
+    res.status(201).json({
+      id: group.id,
+      name: group.name,
+      isExpanded: group.is_expanded,
+      createdAt: group.created_at,
+    });
+  } catch (error) {
+    console.error('Create group error:', error);
+    res.status(500).json({ error: 'Failed to create group' });
+  }
+});
+
+// PUT /api/chats/groups/:id - Update group
+router.put('/groups/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId!;
+    const groupId = parseInt(req.params.id, 10);
+    const { name, isExpanded } = req.body;
+
+    if (isNaN(groupId)) {
+      res.status(400).json({ error: 'Invalid group ID' });
+      return;
+    }
+
+    const group = await updateGroup(groupId, userId, { name, is_expanded: isExpanded });
+    if (!group) {
+      res.status(404).json({ error: 'Group not found' });
+      return;
+    }
+
+    res.json({
+      id: group.id,
+      name: group.name,
+      isExpanded: group.is_expanded,
+      createdAt: group.created_at,
+    });
+  } catch (error) {
+    console.error('Update group error:', error);
+    res.status(500).json({ error: 'Failed to update group' });
+  }
+});
+
+// DELETE /api/chats/groups/:id - Delete group
+router.delete('/groups/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId!;
+    const groupId = parseInt(req.params.id, 10);
+
+    if (isNaN(groupId)) {
+      res.status(400).json({ error: 'Invalid group ID' });
+      return;
+    }
+
+    const deleted = await deleteGroup(groupId, userId);
+    if (!deleted) {
+      res.status(404).json({ error: 'Group not found' });
+      return;
+    }
+
+    res.json({ message: 'Group deleted successfully' });
+  } catch (error) {
+    console.error('Delete group error:', error);
+    res.status(500).json({ error: 'Failed to delete group' });
   }
 });
 
