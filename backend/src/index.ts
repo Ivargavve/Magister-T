@@ -93,7 +93,10 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     console.log('Using Gemini API key (first 10 chars):', apiKey.substring(0, 10) + '...');
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
+    });
 
     const chatHistory = messages.slice(0, -1).map((msg: { role: string; content: string }) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
@@ -104,7 +107,6 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 
     const chat = model.startChat({
       history: chatHistory,
-      systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
     });
 
     const result = await chat.sendMessage(lastMessage.content);
