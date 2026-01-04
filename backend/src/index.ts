@@ -57,6 +57,20 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+// Debug endpoint to check env vars (only shows if they exist, not values)
+app.get('/debug/env', (_req: Request, res: Response) => {
+  res.json({
+    hasGeminiKey: !!process.env.GEMINI_API_KEY,
+    hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+    hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    hasFrontendUrl: !!process.env.FRONTEND_URL,
+    frontendUrl: process.env.FRONTEND_URL || 'not set',
+    nodeEnv: process.env.NODE_ENV || 'not set',
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatsRoutes);
