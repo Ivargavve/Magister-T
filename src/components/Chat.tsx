@@ -27,11 +27,10 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
   // Check if any message is currently streaming
   const hasStreamingMessage = messages.some((m) => m.isStreaming)
 
-  // Detect when user sent a grateful message and response just finished
+  // Detect gratitude message immediately when user sends it
   useEffect(() => {
-    // Only check when we have new messages and streaming just stopped
-    if (messages.length > prevMessagesLengthRef.current && !isStreaming && !isLoading) {
-      // Find the last user message
+    if (messages.length > prevMessagesLengthRef.current) {
+      // Find the newest user message
       const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')
 
       if (lastUserMessage) {
@@ -39,14 +38,23 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
         const isGrateful = GRATITUDE_WORDS.some(word => content.includes(word))
 
         if (isGrateful) {
+          // Show wink immediately - this takes priority over reading/idea
           setShowWink(true)
-          // Reset after 2.5 seconds (slightly longer than the avatar's 2s display)
-          setTimeout(() => setShowWink(false), 2500)
+          // Keep wink until response is done, then a bit longer
         }
       }
     }
     prevMessagesLengthRef.current = messages.length
-  }, [messages.length, isStreaming, isLoading])
+  }, [messages.length])
+
+  // Reset wink after response is complete
+  useEffect(() => {
+    if (showWink && !isStreaming && !isLoading) {
+      // Response is done, keep wink for 2 more seconds then reset
+      const timeout = setTimeout(() => setShowWink(false), 2000)
+      return () => clearTimeout(timeout)
+    }
+  }, [showWink, isStreaming, isLoading])
 
   return (
     <div className="flex-1 flex overflow-hidden">
