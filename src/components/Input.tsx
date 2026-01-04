@@ -41,9 +41,9 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
   }
 
   return (
-    <div className="p-4 border-t border-white/5">
+    <div className="p-4">
       <div className="max-w-3xl mx-auto">
-        <div className="relative bg-dark-800 px-4 py-3 border border-white/10">
+        <div className="relative backdrop-blur-md bg-white/5 px-4 py-3 rounded-2xl border border-white/10">
           <div className="flex items-center gap-3">
             <textarea
               ref={textareaRef}
@@ -61,7 +61,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
               {isStreaming ? (
                 <button
                   onClick={onStopStreaming}
-                  className="p-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 transition-colors"
+                  className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 transition-colors"
                   title="Stoppa generering"
                 >
                   <svg
@@ -81,7 +81,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
                 <button
                   onClick={handleSubmit}
                   disabled={disabled || !value.trim()}
-                  className="p-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors"
+                  className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

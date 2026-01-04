@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import Chat from './components/Chat'
-import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import Settings from './components/Settings'
 import LoginScreen from './components/LoginScreen'
@@ -324,16 +323,12 @@ function App() {
         onRenameGroup={handleRenameGroup}
         onDeleteGroup={handleDeleteGroup}
         onToggleGroup={handleToggleGroup}
+        onSettingsClick={() => setShowSettings(true)}
+        onLoginClick={() => setShowLogin(true)}
       />
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <Header
-          onSettingsClick={() => setShowSettings(true)}
-          onLoginClick={() => setShowLogin(true)}
-        />
-
         {/* Chat area */}
         <Chat
           messages={messages}
