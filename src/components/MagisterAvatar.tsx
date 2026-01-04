@@ -183,22 +183,22 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      {/* Avatar and pillar container - positioned at bottom */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
-        {/* Avatar */}
-        <div className="w-64 h-64 z-10">
-          <img
-            src={getCurrentImage()}
-            alt="Magister T"
-            className="w-full h-full object-contain"
-          />
-        </div>
-        {/* Pillar - extends below viewport */}
-        <div className="w-32 -mt-4">
+      {/* Container positioned at bottom */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
+        {/* Pillar - behind avatar */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 z-0">
           <img
             src={pelare}
             alt=""
             className="w-full object-contain"
+          />
+        </div>
+        {/* Avatar - in front of pillar */}
+        <div className="relative w-64 h-64 z-10 mb-16">
+          <img
+            src={getCurrentImage()}
+            alt="Magister T"
+            className="w-full h-full object-contain"
           />
         </div>
       </div>
