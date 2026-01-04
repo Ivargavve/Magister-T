@@ -11,12 +11,20 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`
     }
   }, [value])
+
+  // Keep focus on textarea after response is complete
+  useEffect(() => {
+    if (!disabled && textareaRef.current) {
+      textareaRef.current.focus()
+    }
+  }, [disabled])
 
   const handleSubmit = () => {
     if (value.trim() && !disabled) {
@@ -45,6 +53,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
               onKeyDown={handleKeyDown}
               placeholder="Skriv din fråga här..."
               disabled={disabled}
+              autoFocus
               rows={1}
               className="flex-1 bg-transparent text-dark-100 placeholder-dark-500 resize-none text-sm leading-relaxed disabled:opacity-50 focus:outline-none"
             />
