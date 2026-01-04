@@ -8,8 +8,11 @@ export interface Message {
 }
 
 interface UseChatOptions {
-  apiEndpoint?: string
   token?: string | null
+  chatId?: number | string | null
+  onChatCreated?: (chatId: number | string) => void
+  onMessagesUpdated?: (messages: Message[]) => void
+  initialMessages?: Message[]
 }
 
 interface UseChatReturn {
@@ -19,62 +22,57 @@ interface UseChatReturn {
   sendMessage: (content: string) => Promise<void>
   clearChat: () => void
   stopStreaming: () => void
+  loadMessages: (messages: Message[]) => void
 }
+
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 /**
- * Custom hook for handling streaming chat with the Gemini AI backend.
- * Supports Server-Sent Events (SSE) for real-time text streaming.
- * For guests (no token), messages are persisted in localStorage.
+ * Custom hook for handling chat with the AI backend.
+ * Supports both authenticated (database) and guest (localStorage) modes.
  */
-const API_URL = import.meta.env.VITE_API_URL || ''
-const GUEST_MESSAGES_KEY = 'magister_t_guest_messages'
-
-// Load guest messages from localStorage
-const loadGuestMessages = (): Message[] => {
-  try {
-    const stored = localStorage.getItem(GUEST_MESSAGES_KEY)
-    if (stored) {
-      return JSON.parse(stored)
-    }
-  } catch (e) {
-    console.error('Failed to load guest messages:', e)
-  }
-  return []
-}
-
-// Save guest messages to localStorage
-const saveGuestMessages = (messages: Message[]) => {
-  try {
-    // Only save non-streaming messages
-    const toSave = messages.filter(m => !m.isStreaming)
-    localStorage.setItem(GUEST_MESSAGES_KEY, JSON.stringify(toSave))
-  } catch (e) {
-    console.error('Failed to save guest messages:', e)
-  }
-}
-
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
-  // Use Render backend if VITE_API_URL is set, otherwise use local Netlify function
-  const defaultEndpoint = API_URL ? `${API_URL}/api/chat` : '/api/chat-stream'
-  const { apiEndpoint = defaultEndpoint, token } = options
+  const { token, chatId, onChatCreated, onMessagesUpdated, initialMessages = [] } = options
 
-  // For guests, load messages from localStorage on mount
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (!token) {
-      return loadGuestMessages()
-    }
-    return []
-  })
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [isLoading, setIsLoading] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const currentChatIdRef = useRef<number | string | null>(chatId || null)
+  const prevChatIdRef = useRef<number | string | null>(chatId || null)
 
-  // Save messages to localStorage for guests whenever messages change
+  // Update ref when chatId changes
   useEffect(() => {
-    if (!token) {
-      saveGuestMessages(messages)
+    currentChatIdRef.current = chatId || null
+  }, [chatId])
+
+  // Only update messages when switching to a DIFFERENT existing chat
+  // Don't reset when creating a new chat (chatId goes from null to something)
+  useEffect(() => {
+    const prevId = prevChatIdRef.current
+    const newId = chatId
+
+    // Only load initial messages if:
+    // 1. We're switching FROM an existing chat TO another existing chat
+    // 2. OR we're selecting an existing chat from no chat
+    if (newId !== null && prevId !== newId && initialMessages.length > 0) {
+      setMessages(initialMessages)
     }
-  }, [messages, token])
+
+    prevChatIdRef.current = newId ?? null
+  }, [chatId, initialMessages])
+
+  // Notify parent when messages change
+  useEffect(() => {
+    if (onMessagesUpdated && messages.length > 0) {
+      onMessagesUpdated(messages)
+    }
+  }, [messages, onMessagesUpdated])
+
+  // Load messages from external source (used when selecting a chat)
+  const loadMessages = useCallback((newMessages: Message[]) => {
+    setMessages(newMessages)
+  }, [])
 
   /**
    * Stops the current streaming response
@@ -87,7 +85,6 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     setIsStreaming(false)
     setIsLoading(false)
 
-    // Mark the current streaming message as complete
     setMessages((prev) =>
       prev.map((msg) =>
         msg.isStreaming ? { ...msg, isStreaming: false } : msg
@@ -104,7 +101,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
 
     for (const line of lines) {
       if (line.startsWith('data: ')) {
-        const data = line.slice(6) // Remove 'data: ' prefix
+        const data = line.slice(6)
         if (data === '[DONE]') {
           continue
         }
@@ -123,13 +120,40 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   }
 
   /**
-   * Sends a message and handles the streaming response
+   * Creates a new chat for authenticated users
+   */
+  const createNewChat = async (): Promise<number | null> => {
+    if (!token || !API_URL) return null
+
+    try {
+      const response = await fetch(`${API_URL}/api/chats`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title: 'Ny konversation' }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create chat')
+      }
+
+      const chat = await response.json()
+      return chat.id
+    } catch (error) {
+      console.error('Failed to create chat:', error)
+      return null
+    }
+  }
+
+  /**
+   * Sends a message and handles the response
    */
   const sendMessage = useCallback(
     async (content: string) => {
       if (!content.trim() || isLoading) return
 
-      // Create abort controller for this request
       abortControllerRef.current = new AbortController()
 
       // Add user message
@@ -153,67 +177,123 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
       setIsStreaming(true)
 
       try {
-        // Prepare messages for API (exclude the streaming placeholder)
-        const apiMessages = [...messages, userMessage].map((m) => ({
-          role: m.role,
-          content: m.content,
-        }))
+        // For authenticated users with no current chat, create one first
+        let activeChatId = currentChatIdRef.current
 
-        const response = await fetch(apiEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: JSON.stringify({ messages: apiMessages }),
-          signal: abortControllerRef.current.signal,
-        })
-
-        if (!response.ok) {
-          throw new Error('Något gick fel med anropet')
+        if (token && !activeChatId) {
+          const newChatId = await createNewChat()
+          if (newChatId) {
+            activeChatId = newChatId
+            currentChatIdRef.current = newChatId
+            onChatCreated?.(newChatId)
+          }
+        } else if (!token && !activeChatId) {
+          // For guests, notify that we need a new chat
+          onChatCreated?.('new')
         }
 
-        // Read the response as text (SSE format)
-        const text = await response.text()
-        const chunks = parseSSE(text)
+        // If authenticated and we have a chat, use the authenticated endpoint
+        if (token && activeChatId && API_URL) {
+          const response = await fetch(`${API_URL}/api/chats/${activeChatId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ content: content.trim() }),
+            signal: abortControllerRef.current.signal,
+          })
 
-        // Accumulate and update message progressively
-        let accumulatedText = ''
+          if (!response.ok) {
+            throw new Error('Något gick fel med anropet')
+          }
 
-        for (const chunk of chunks) {
-          accumulatedText += chunk
+          const data = await response.json()
+          const responseText = data.assistantMessage?.content || ''
 
-          // Update the assistant message with accumulated text
+          // Update messages with the response
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === assistantMessageId
-                ? { ...msg, content: accumulatedText }
+                ? { ...msg, content: responseText, isStreaming: false }
                 : msg
             )
           )
+        } else {
+          // Guest mode - use the anonymous endpoint
+          const currentMessages = messages
+          const apiMessages = [...currentMessages, userMessage].map((m) => ({
+            role: m.role,
+            content: m.content,
+          }))
 
-          // Small delay for smooth animation effect
-          await new Promise((resolve) => setTimeout(resolve, 10))
+          const endpoint = API_URL ? `${API_URL}/api/chat` : '/api/chat-stream'
+
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ messages: apiMessages }),
+            signal: abortControllerRef.current.signal,
+          })
+
+          if (!response.ok) {
+            throw new Error('Något gick fel med anropet')
+          }
+
+          const contentType = response.headers.get('content-type') || ''
+
+          // Handle JSON response (from Render backend)
+          if (contentType.includes('application/json')) {
+            const data = await response.json()
+            const responseText = data.response || ''
+
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: responseText, isStreaming: false }
+                  : msg
+              )
+            )
+          } else {
+            // Handle SSE format (from Netlify functions)
+            const text = await response.text()
+            const chunks = parseSSE(text)
+
+            let accumulatedText = ''
+
+            for (const chunk of chunks) {
+              accumulatedText += chunk
+
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, content: accumulatedText }
+                    : msg
+                )
+              )
+
+              await new Promise((resolve) => setTimeout(resolve, 10))
+            }
+
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, isStreaming: false }
+                  : msg
+              )
+            )
+          }
         }
-
-        // Mark streaming as complete
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantMessageId
-              ? { ...msg, isStreaming: false }
-              : msg
-          )
-        )
       } catch (error) {
         if ((error as Error).name === 'AbortError') {
-          // User cancelled the request
           console.log('Request was cancelled')
           return
         }
 
         console.error('Error:', error)
 
-        // Update assistant message with error
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantMessageId
@@ -231,19 +311,17 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         abortControllerRef.current = null
       }
     },
-    [apiEndpoint, isLoading, messages, token]
+    [isLoading, messages, token, onChatCreated]
   )
 
   /**
-   * Clears all messages (and localStorage for guests)
+   * Clears all messages
    */
   const clearChat = useCallback(() => {
     stopStreaming()
     setMessages([])
-    if (!token) {
-      localStorage.removeItem(GUEST_MESSAGES_KEY)
-    }
-  }, [stopStreaming, token])
+    currentChatIdRef.current = null
+  }, [stopStreaming])
 
   return {
     messages,
@@ -252,6 +330,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
     sendMessage,
     clearChat,
     stopStreaming,
+    loadMessages,
   }
 }
 

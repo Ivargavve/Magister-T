@@ -1,5 +1,7 @@
 import type { Message } from '../hooks/useChat'
 import { useAuth } from '../contexts/AuthContext'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface MessageBubbleProps {
   message: Message
@@ -68,19 +70,73 @@ function MessageBubble({ message }: MessageBubbleProps) {
 
         {/* Message content */}
         <div
-          className={`text-sm leading-relaxed whitespace-pre-wrap ${
-            isAssistant ? 'text-dark-200' : 'text-white'
+          className={`text-sm leading-relaxed ${
+            isAssistant ? 'text-dark-200 markdown-content' : 'text-white whitespace-pre-wrap'
           }`}
         >
-          {message.content}
-          {isStreaming && message.content && (
-            <span className="inline-block w-0.5 h-4 ml-0.5 bg-emerald-400 animate-cursor-blink align-middle" />
-          )}
-          {isStreaming && !message.content && (
-            <span className="text-dark-400 flex items-center gap-1">
-              <span>Magister T skriver</span>
-              <span className="animate-pulse">...</span>
-            </span>
+          {isAssistant ? (
+            <>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  // Headings
+                  h1: ({ children }) => <h1 className="text-xl font-bold mt-4 mb-2 text-dark-100">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-lg font-bold mt-3 mb-2 text-dark-100">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-base font-semibold mt-2 mb-1 text-dark-100">{children}</h3>,
+                  // Paragraphs
+                  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                  // Lists
+                  ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                  li: ({ children }) => <li className="ml-2">{children}</li>,
+                  // Code
+                  code: ({ className, children }) => {
+                    const isInline = !className
+                    if (isInline) {
+                      return (
+                        <code className="bg-dark-700 text-emerald-400 px-1.5 py-0.5 rounded text-xs font-mono">
+                          {children}
+                        </code>
+                      )
+                    }
+                    return (
+                      <code className="block bg-dark-800 p-3 rounded-lg my-2 overflow-x-auto text-xs font-mono text-dark-200">
+                        {children}
+                      </code>
+                    )
+                  },
+                  pre: ({ children }) => <pre className="bg-dark-800 rounded-lg my-2 overflow-x-auto">{children}</pre>,
+                  // Strong and emphasis
+                  strong: ({ children }) => <strong className="font-semibold text-dark-100">{children}</strong>,
+                  em: ({ children }) => <em className="italic">{children}</em>,
+                  // Links
+                  a: ({ href, children }) => (
+                    <a href={href} className="text-emerald-400 hover:text-emerald-300 underline" target="_blank" rel="noopener noreferrer">
+                      {children}
+                    </a>
+                  ),
+                  // Blockquotes
+                  blockquote: ({ children }) => (
+                    <blockquote className="border-l-2 border-emerald-500 pl-3 my-2 italic text-dark-300">
+                      {children}
+                    </blockquote>
+                  ),
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+              {isStreaming && message.content && (
+                <span className="inline-block w-0.5 h-4 ml-0.5 bg-emerald-400 animate-cursor-blink align-middle" />
+              )}
+              {isStreaming && !message.content && (
+                <span className="text-dark-400 flex items-center gap-1">
+                  <span>Magister T skriver</span>
+                  <span className="animate-pulse">...</span>
+                </span>
+              )}
+            </>
+          ) : (
+            message.content
           )}
         </div>
       </div>
