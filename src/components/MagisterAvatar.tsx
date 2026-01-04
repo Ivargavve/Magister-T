@@ -224,7 +224,7 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
           <img
             src={getCurrentImage()}
             alt="Magister T"
-            className={`w-full h-full object-contain ${showHeart ? 'scale-110' : ''}`}
+            className="w-full h-full object-contain"
           />
         </div>
       </div>
