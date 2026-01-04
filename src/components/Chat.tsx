@@ -116,7 +116,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
       {/* Right side: Magister T Portrait (only visible when there are messages) */}
       {messages.length > 0 && (
         <div className="hidden lg:flex w-72 xl:w-80 flex-shrink-0 border-l border-white/5">
-          <MagisterPortrait isThinking={isLoading || isStreaming} />
+          <MagisterPortrait />
         </div>
       )}
     </div>

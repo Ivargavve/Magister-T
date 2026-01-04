@@ -41,11 +41,10 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
   }
 
   return (
-    <div className="p-4 glass border-t border-white/5">
+    <div className="p-4 border-t border-white/5">
       <div className="max-w-3xl mx-auto">
-        <div className="relative glass-card rounded-2xl px-4 py-3 gradient-border transition-all duration-200 focus-within:shadow-glow">
+        <div className="relative bg-dark-800 px-4 py-3 border border-white/10">
           <div className="flex items-center gap-3">
-            {/* Textarea */}
             <textarea
               ref={textareaRef}
               value={value}
@@ -58,12 +57,11 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
               className="flex-1 bg-transparent text-dark-100 placeholder-dark-500 resize-none text-sm leading-relaxed disabled:opacity-50 focus:outline-none"
             />
 
-            {/* Action buttons */}
             <div className="flex items-center gap-2">
               {isStreaming ? (
                 <button
                   onClick={onStopStreaming}
-                  className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 transition-all duration-200 hover-lift"
+                  className="p-2.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 transition-colors"
                   title="Stoppa generering"
                 >
                   <svg
@@ -83,7 +81,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
                 <button
                   onClick={handleSubmit}
                   disabled={disabled || !value.trim()}
-                  className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:opacity-40 disabled:hover:from-emerald-500 disabled:hover:to-emerald-600 transition-all duration-200 hover-lift shadow-glow disabled:shadow-none"
+                  className="p-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -97,17 +95,6 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Helper text */}
-        <div className="flex items-center justify-center gap-4 mt-3">
-          <p className="text-xs text-dark-500">
-            Magister T hjälper dig tänka - inte att fuska!
-          </p>
-          <span className="text-dark-600">|</span>
-          <p className="text-xs text-dark-600">
-            Tryck Enter för att skicka, Shift+Enter för ny rad
-          </p>
         </div>
       </div>
     </div>
