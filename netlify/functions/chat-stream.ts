@@ -12,7 +12,7 @@ interface RequestBody {
 }
 
 const handler: Handler = async (event) => {
-  // Endast POST-requests
+  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -20,7 +20,7 @@ const handler: Handler = async (event) => {
     }
   }
 
-  // Kontrollera API-nyckel
+  // Check for API key
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     console.error('GEMINI_API_KEY saknas')
@@ -41,14 +41,14 @@ const handler: Handler = async (event) => {
       }
     }
 
-    // Initiera Gemini
+    // Initialize Gemini
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
     })
 
-    // Konvertera meddelanden till Gemini-format
+    // Convert messages to Gemini format
     const history = messages.slice(0, -1).map((msg) => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
@@ -56,21 +56,37 @@ const handler: Handler = async (event) => {
 
     const lastMessage = messages[messages.length - 1]
 
-    // Starta chatt med historik
+    // Start chat with history
     const chat = model.startChat({
       history: history as any,
     })
 
-    // Skicka senaste meddelandet
-    const result = await chat.sendMessage(lastMessage.content)
-    const response = result.response.text()
+    // Use streaming API
+    const result = await chat.sendMessageStream(lastMessage.content)
+
+    // Collect all chunks and format as SSE
+    let sseBody = ''
+
+    for await (const chunk of result.stream) {
+      const text = chunk.text()
+      if (text) {
+        // Format each chunk as an SSE event
+        const sseEvent = `data: ${JSON.stringify({ text })}\n\n`
+        sseBody += sseEvent
+      }
+    }
+
+    // Add done event
+    sseBody += `data: [DONE]\n\n`
 
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       },
-      body: JSON.stringify({ response }),
+      body: sseBody,
     }
   } catch (error) {
     console.error('Fel vid Gemini-anrop:', error)
