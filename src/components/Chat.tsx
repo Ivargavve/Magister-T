@@ -185,36 +185,4 @@ function ChalkButton({
   )
 }
 
-function SuggestionButton({
-  text,
-  icon,
-  onClick,
-}: {
-  text: string
-  icon: React.ReactNode
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="group flex items-center gap-3 px-5 py-4 text-left text-sm text-gray-800 paper-card hover:bg-parchment-100 rounded-xl transition-all duration-200 hover-lift"
-    >
-      <div className="p-2 rounded-lg bg-magister-500/20 text-magister-600 group-hover:bg-magister-500/30 transition-colors">
-        {icon}
-      </div>
-      <span className="flex-1 text-gray-800">{text}</span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="currentColor"
-        className="w-4 h-4 text-gray-500 group-hover:text-magister-500 group-hover:translate-x-1 transition-all"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-      </svg>
-    </button>
-  )
-}
-
 export default Chat
