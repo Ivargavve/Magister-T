@@ -76,7 +76,12 @@ export async function verifyGoogleToken(token: string): Promise<{
       return null;
     }
 
-    const userInfo = await response.json();
+    const userInfo = await response.json() as {
+      id: string;
+      email: string;
+      name?: string;
+      picture?: string;
+    };
 
     return {
       googleId: userInfo.id,

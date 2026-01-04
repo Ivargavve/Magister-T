@@ -8,15 +8,15 @@ const router = Router();
 router.post('/google', async (req: Request, res: Response): Promise<void> => {
   try {
     // Accept both 'token' (access token) and 'idToken' for flexibility
-    const token = req.body.token || req.body.idToken;
+    const googleToken = req.body.token || req.body.idToken;
 
-    if (!token) {
+    if (!googleToken) {
       res.status(400).json({ error: 'Google token is required' });
       return;
     }
 
     // Verify the Google token (supports both ID token and access token)
-    const googleUser = await verifyGoogleToken(token);
+    const googleUser = await verifyGoogleToken(googleToken);
     if (!googleUser) {
       res.status(401).json({ error: 'Invalid Google token' });
       return;
