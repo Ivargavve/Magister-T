@@ -36,27 +36,51 @@ export function generateToken(user: User): string {
   });
 }
 
-// Verify Google ID token
-export async function verifyGoogleToken(idToken: string): Promise<{
+// Verify Google token (supports both ID token and access token)
+export async function verifyGoogleToken(token: string): Promise<{
   googleId: string;
   email: string;
   name: string;
   picture: string | null;
 } | null> {
+  // First try to verify as ID token
   try {
     const ticket = await googleClient.verifyIdToken({
-      idToken,
+      idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
-    if (!payload) return null;
+    if (payload) {
+      return {
+        googleId: payload.sub,
+        email: payload.email!,
+        name: payload.name || payload.email!,
+        picture: payload.picture || null,
+      };
+    }
+  } catch {
+    // Not a valid ID token, try as access token
+  }
+
+  // Try to use as access token to fetch user info
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`
+    );
+
+    if (!response.ok) {
+      console.error('Failed to fetch user info with access token');
+      return null;
+    }
+
+    const userInfo = await response.json();
 
     return {
-      googleId: payload.sub,
-      email: payload.email!,
-      name: payload.name || payload.email!,
-      picture: payload.picture || null,
+      googleId: userInfo.sub,
+      email: userInfo.email,
+      name: userInfo.name || userInfo.email,
+      picture: userInfo.picture || null,
     };
   } catch (error) {
     console.error('Error verifying Google token:', error);

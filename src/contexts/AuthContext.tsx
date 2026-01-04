@@ -56,12 +56,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json()
 
+      // Normalize user data (backend sends profileImage, we use profile_image)
+      const normalizedUser: User = {
+        name: data.user.name,
+        email: data.user.email,
+        profile_image: data.user.profileImage || data.user.profile_image || '',
+      }
+
       // Store JWT token and user info
       localStorage.setItem(TOKEN_KEY, data.token)
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user))
+      localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser))
 
       setToken(data.token)
-      setUser(data.user)
+      setUser(normalizedUser)
     } catch (error) {
       console.error('Login error:', error)
       throw error
