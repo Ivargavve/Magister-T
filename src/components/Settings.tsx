@@ -1,10 +1,21 @@
+import { useState } from 'react'
+
 interface SettingsProps {
   isOpen: boolean
   onClose: () => void
+  onClearAllChats: () => void
 }
 
-function Settings({ isOpen, onClose }: SettingsProps) {
+function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+
   if (!isOpen) return null
+
+  const handleDeleteAllChats = () => {
+    onClearAllChats()
+    setShowConfirmDelete(false)
+    onClose()
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay animate-fade-in">
@@ -39,7 +50,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
 
         {/* Content */}
         <div className="px-6 py-6 space-y-6">
-          {/* API Settings Section */}
+          {/* Data Management Section */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-dark-300 flex items-center gap-2">
               <svg
@@ -53,23 +64,70 @@ function Settings({ isOpen, onClose }: SettingsProps) {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"
+                  d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
                 />
               </svg>
-              API-inställningar
+              Datahantering
             </h3>
             <div className="space-y-3">
-              <div>
-                <label className="block text-sm text-dark-400 mb-2">
-                  API-nyckel (kommer snart)
-                </label>
-                <input
-                  type="password"
-                  placeholder="sk-..."
-                  disabled
-                  className="w-full px-4 py-3 rounded-xl bg-dark-900/50 border border-white/5 text-dark-300 placeholder-dark-600 text-sm disabled:opacity-50"
-                />
-              </div>
+              {!showConfirmDelete ? (
+                <button
+                  onClick={() => setShowConfirmDelete(true)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">Radera alla chattar</span>
+                  </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                </button>
+              ) : (
+                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 space-y-3">
+                  <p className="text-sm text-red-400">
+                    Är du säker? Detta kommer radera all din chatthistorik permanent.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleDeleteAllChats}
+                      className="flex-1 px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors"
+                    >
+                      Ja, radera allt
+                    </button>
+                    <button
+                      onClick={() => setShowConfirmDelete(false)}
+                      className="flex-1 px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 text-dark-200 text-sm font-medium transition-colors"
+                    >
+                      Avbryt
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -141,13 +199,6 @@ function Settings({ isOpen, onClose }: SettingsProps) {
               Version 1.0.0
             </p>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/5">
-          <p className="text-xs text-dark-500 text-center">
-            Fler inställningar kommer snart
-          </p>
         </div>
       </div>
     </div>

@@ -63,7 +63,11 @@ function App() {
       </div>
 
       {/* Settings Modal */}
-      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      <Settings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onClearAllChats={clearChat}
+      />
 
       {/* Login Modal */}
       {showLogin && !isAuthenticated && (
