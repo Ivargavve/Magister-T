@@ -44,10 +44,10 @@ interface UseGuestChatsReturn {
 // Generate a unique ID
 const generateId = () => `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-// Load chats from localStorage
+// Load chats from sessionStorage (cleared when browser closes)
 const loadChatsFromStorage = (): GuestChat[] => {
   try {
-    const stored = localStorage.getItem(GUEST_CHATS_KEY)
+    const stored = sessionStorage.getItem(GUEST_CHATS_KEY)
     if (stored) {
       return JSON.parse(stored)
     }
@@ -57,19 +57,19 @@ const loadChatsFromStorage = (): GuestChat[] => {
   return []
 }
 
-// Save chats to localStorage
+// Save chats to sessionStorage
 const saveChatsToStorage = (chats: GuestChat[]) => {
   try {
-    localStorage.setItem(GUEST_CHATS_KEY, JSON.stringify(chats))
+    sessionStorage.setItem(GUEST_CHATS_KEY, JSON.stringify(chats))
   } catch (e) {
     console.error('Failed to save guest chats:', e)
   }
 }
 
-// Load groups from localStorage
+// Load groups from sessionStorage
 const loadGroupsFromStorage = (): GuestGroup[] => {
   try {
-    const stored = localStorage.getItem(GUEST_GROUPS_KEY)
+    const stored = sessionStorage.getItem(GUEST_GROUPS_KEY)
     if (stored) {
       return JSON.parse(stored)
     }
@@ -79,31 +79,31 @@ const loadGroupsFromStorage = (): GuestGroup[] => {
   return []
 }
 
-// Save groups to localStorage
+// Save groups to sessionStorage
 const saveGroupsToStorage = (groups: GuestGroup[]) => {
   try {
-    localStorage.setItem(GUEST_GROUPS_KEY, JSON.stringify(groups))
+    sessionStorage.setItem(GUEST_GROUPS_KEY, JSON.stringify(groups))
   } catch (e) {
     console.error('Failed to save guest groups:', e)
   }
 }
 
-// Load current chat ID from localStorage
+// Load current chat ID from sessionStorage
 const loadCurrentChatId = (): string | null => {
   try {
-    return localStorage.getItem(GUEST_CURRENT_CHAT_KEY)
+    return sessionStorage.getItem(GUEST_CURRENT_CHAT_KEY)
   } catch {
     return null
   }
 }
 
-// Save current chat ID to localStorage
+// Save current chat ID to sessionStorage
 const saveCurrentChatId = (chatId: string | null) => {
   try {
     if (chatId) {
-      localStorage.setItem(GUEST_CURRENT_CHAT_KEY, chatId)
+      sessionStorage.setItem(GUEST_CURRENT_CHAT_KEY, chatId)
     } else {
-      localStorage.removeItem(GUEST_CURRENT_CHAT_KEY)
+      sessionStorage.removeItem(GUEST_CURRENT_CHAT_KEY)
     }
   } catch (e) {
     console.error('Failed to save current chat ID:', e)
@@ -223,9 +223,9 @@ export function useGuestChats(): UseGuestChatsReturn {
     setChats([])
     setGroups([])
     setCurrentChatId(null)
-    localStorage.removeItem(GUEST_CHATS_KEY)
-    localStorage.removeItem(GUEST_GROUPS_KEY)
-    localStorage.removeItem(GUEST_CURRENT_CHAT_KEY)
+    sessionStorage.removeItem(GUEST_CHATS_KEY)
+    sessionStorage.removeItem(GUEST_GROUPS_KEY)
+    sessionStorage.removeItem(GUEST_CURRENT_CHAT_KEY)
   }, [])
 
   // Clear current chat selection
