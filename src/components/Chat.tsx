@@ -24,6 +24,8 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
   const [showWink, setShowWink] = useState(false)
   const prevMessagesLengthRef = useRef(messages.length)
 
+  // Simple scroll behavior: always scroll to bottom when messages change
+  // This handles: loading chats, sending messages, receiving responses
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -77,7 +79,9 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
             className="h-16 bg-cover bg-center flex items-center justify-center flex-shrink-0 mt-6 mx-0 md:mx-4 rounded-none md:rounded-lg"
             style={{ backgroundImage: `url(${topOfChatPlank})` }}
           >
-            <h1 className="text-xl font-semibold text-warm-200 drop-shadow-lg font-serif">Magister T</h1>
+            <h1 className="text-xl font-semibold text-warm-200 drop-shadow-lg font-serif flex items-center gap-1">
+              Magister <img src="/tlogo.png" alt="T" className="h-6 w-6 inline-block" />
+            </h1>
           </div>
         )}
 
