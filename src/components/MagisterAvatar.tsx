@@ -147,21 +147,33 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
       return
     }
 
+    let blinkTimeoutId: ReturnType<typeof setTimeout> | null = null
+    let blinkDurationId: ReturnType<typeof setTimeout> | null = null
+    let isActive = true
+
     const scheduleBlink = () => {
-      // Random interval between 5-12 seconds
-      const interval = Math.random() * 7000 + 5000
-      return setTimeout(() => {
+      if (!isActive) return
+      // Random interval between 4-8 seconds
+      const interval = Math.random() * 4000 + 4000
+      blinkTimeoutId = setTimeout(() => {
+        if (!isActive) return
         setIsBlinking(true)
-        // Blink for 200ms
-        setTimeout(() => {
+        // Blink for 150ms
+        blinkDurationId = setTimeout(() => {
+          if (!isActive) return
           setIsBlinking(false)
-        }, 200)
-        scheduleBlink()
+          scheduleBlink()
+        }, 150)
       }, interval)
     }
 
-    const timeoutId = scheduleBlink()
-    return () => clearTimeout(timeoutId)
+    scheduleBlink()
+
+    return () => {
+      isActive = false
+      if (blinkTimeoutId) clearTimeout(blinkTimeoutId)
+      if (blinkDurationId) clearTimeout(blinkDurationId)
+    }
   }, [avatarState])
 
   // Get the current image based on state
