@@ -128,8 +128,8 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
     if (avatarState !== 'idle') return
 
     const scheduleSwitch = () => {
-      // Random interval between 5-20 seconds
-      const interval = Math.random() * 15000 + 5000
+      // Random interval between 7-22 seconds
+      const interval = Math.random() * 15000 + 7000
       return setTimeout(() => {
         setCurrentOriginal(prev => prev === 1 ? 2 : 1)
         scheduleSwitch()
@@ -148,8 +148,8 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
     }
 
     const scheduleBlink = () => {
-      // Random interval between 3-10 seconds
-      const interval = Math.random() * 7000 + 3000
+      // Random interval between 5-12 seconds
+      const interval = Math.random() * 7000 + 5000
       return setTimeout(() => {
         setIsBlinking(true)
         // Blink for 200ms
