@@ -3,6 +3,7 @@ import Chat from './components/Chat'
 import Sidebar from './components/Sidebar'
 import Settings from './components/Settings'
 import LoginScreen from './components/LoginScreen'
+import AdminPage from './components/AdminPage'
 import { useChat, Message } from './hooks/useChat'
 import { useChats } from './hooks/useChats'
 import { useGuestChats } from './hooks/useGuestChats'
@@ -19,6 +20,7 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
 
   // Authenticated chat list management
   const {
@@ -277,6 +279,10 @@ function App() {
             setShowLogin(true)
             setSidebarOpen(false)
           }}
+          onAdminClick={() => {
+            setShowAdmin(true)
+            setSidebarOpen(false)
+          }}
           onClose={() => setSidebarOpen(false)}
           isMobileOpen={sidebarOpen}
         />
@@ -285,23 +291,29 @@ function App() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile menu button */}
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="md:hidden fixed top-4 left-4 z-30 p-2 rounded-lg bg-warm-800/80 text-parchment-200 hover:bg-warm-700 transition-colors shadow-lg"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
+        {!showAdmin && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden fixed top-4 left-4 z-30 p-2 rounded-lg bg-warm-800/80 text-parchment-200 hover:bg-warm-700 transition-colors shadow-lg"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+        )}
 
-        {/* Chat area */}
-        <Chat
-          messages={messages}
-          onSendMessage={sendMessage}
-          isLoading={isLoading}
-          isStreaming={isStreaming}
-          onStopStreaming={stopStreaming}
-        />
+        {/* Admin page or Chat area */}
+        {showAdmin ? (
+          <AdminPage onBack={() => setShowAdmin(false)} />
+        ) : (
+          <Chat
+            messages={messages}
+            onSendMessage={sendMessage}
+            isLoading={isLoading}
+            isStreaming={isStreaming}
+            onStopStreaming={stopStreaming}
+          />
+        )}
       </div>
 
       {/* Settings Modal */}

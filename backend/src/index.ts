@@ -7,6 +7,7 @@ import { initializeDatabase } from './db';
 import authRoutes from './routes/auth';
 import chatsRoutes from './routes/chats';
 import usersRoutes from './routes/users';
+import adminRoutes from './routes/admin';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -75,6 +76,7 @@ app.get('/debug/env', (_req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/chats', chatsRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Streaming endpoint for anonymous chat
 app.post('/api/chat', async (req: Request, res: Response) => {

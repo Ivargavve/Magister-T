@@ -1,0 +1,288 @@
+import { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import classroomBackground from '../assets/classlighter.jpg'
+
+interface ChatItem {
+  id: number
+  title: string
+  user_id: number
+  user_email: string
+  user_name: string
+  message_count: number
+  created_at: string
+  updated_at: string
+  first_message: string | null
+}
+
+interface Message {
+  id: number
+  role: string
+  content: string
+  created_at: string
+}
+
+interface Stats {
+  totalUsers: number
+  totalChats: number
+  totalMessages: number
+  recentActivity: { date: string; chats: string; messages: string }[]
+}
+
+interface AdminPageProps {
+  onBack: () => void
+}
+
+const API_URL = import.meta.env.VITE_API_URL || ''
+
+function AdminPage({ onBack }: AdminPageProps) {
+  const { token } = useAuth()
+  const [chats, setChats] = useState<ChatItem[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [selectedChat, setSelectedChat] = useState<ChatItem | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadData()
+  }, [token])
+
+  const loadData = async () => {
+    if (!token) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const [chatsRes, statsRes] = await Promise.all([
+        fetch(`${API_URL}/api/admin/chats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/api/admin/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ])
+
+      if (!chatsRes.ok || !statsRes.ok) {
+        throw new Error('Failed to load admin data')
+      }
+
+      const chatsData = await chatsRes.json()
+      const statsData = await statsRes.json()
+
+      setChats(chatsData.chats || [])
+      setStats(statsData.stats || null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadMessages = async (chat: ChatItem) => {
+    if (!token) return
+
+    setSelectedChat(chat)
+    setIsLoadingMessages(true)
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/chats/${chat.id}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (!res.ok) throw new Error('Failed to load messages')
+
+      const data = await res.json()
+      setMessages(data.messages || [])
+    } catch (err) {
+      console.error('Error loading messages:', err)
+    } finally {
+      setIsLoadingMessages(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('sv-SE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just nu'
+    if (diffMins < 60) return `${diffMins} min sedan`
+    if (diffHours < 24) return `${diffHours} tim sedan`
+    if (diffDays < 7) return `${diffDays} dagar sedan`
+    return date.toLocaleDateString('sv-SE')
+  }
+
+  return (
+    <div className="flex-1 flex overflow-hidden relative">
+      {/* Blurred background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat blur"
+        style={{ backgroundImage: `url(${classroomBackground})` }}
+      />
+
+      {/* Content */}
+      <div className="relative flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="bg-warm-900/90 backdrop-blur-sm border-b border-warm-700 px-6 py-4 flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="p-2 rounded-lg bg-warm-800 hover:bg-warm-700 text-warm-200 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold text-warm-100">Admin Panel</h1>
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-warm-700 border-t-warm-400 rounded-full animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-red-200">
+              {error}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Stats cards */}
+              {stats && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl p-4 border border-warm-700">
+                    <p className="text-warm-400 text-sm">Totalt användare</p>
+                    <p className="text-3xl font-bold text-warm-100">{stats.totalUsers}</p>
+                  </div>
+                  <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl p-4 border border-warm-700">
+                    <p className="text-warm-400 text-sm">Totalt chattar</p>
+                    <p className="text-3xl font-bold text-warm-100">{stats.totalChats}</p>
+                  </div>
+                  <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl p-4 border border-warm-700">
+                    <p className="text-warm-400 text-sm">Totalt meddelanden</p>
+                    <p className="text-3xl font-bold text-warm-100">{stats.totalMessages}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Chats list */}
+              <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl border border-warm-700 overflow-hidden">
+                <div className="px-4 py-3 border-b border-warm-700">
+                  <h2 className="font-semibold text-warm-100">Senaste chattar</h2>
+                </div>
+                <div className="divide-y divide-warm-700/50">
+                  {chats.length === 0 ? (
+                    <p className="px-4 py-8 text-center text-warm-400">Inga chattar än</p>
+                  ) : (
+                    chats.map((chat) => (
+                      <div
+                        key={chat.id}
+                        className="px-4 py-3 hover:bg-warm-800/50 cursor-pointer transition-colors"
+                        onClick={() => loadMessages(chat)}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-warm-100 truncate">{chat.title}</p>
+                            <p className="text-sm text-warm-400 truncate">
+                              {chat.user_name} ({chat.user_email})
+                            </p>
+                            {chat.first_message && (
+                              <p className="text-sm text-warm-500 truncate mt-1">
+                                "{chat.first_message}"
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-sm text-warm-400">{formatRelativeTime(chat.updated_at)}</p>
+                            <p className="text-xs text-warm-500">{chat.message_count} meddelanden</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Chat detail modal */}
+        {selectedChat && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-warm-900 rounded-xl border border-warm-700 w-full max-w-2xl max-h-[80vh] flex flex-col">
+              {/* Modal header */}
+              <div className="px-4 py-3 border-b border-warm-700 flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-warm-100">{selectedChat.title}</h3>
+                  <p className="text-sm text-warm-400">
+                    {selectedChat.user_name} - {formatDate(selectedChat.created_at)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedChat(null)}
+                  className="p-2 rounded-lg hover:bg-warm-800 text-warm-400 hover:text-warm-200 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {isLoadingMessages ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-warm-700 border-t-warm-400 rounded-full animate-spin" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <p className="text-center text-warm-400 py-8">Inga meddelanden</p>
+                ) : (
+                  messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`p-3 rounded-lg ${
+                        msg.role === 'user'
+                          ? 'bg-magister-600/20 border border-magister-600/30 ml-8'
+                          : 'bg-warm-800 border border-warm-700 mr-8'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-xs font-medium ${
+                          msg.role === 'user' ? 'text-magister-400' : 'text-warm-400'
+                        }`}>
+                          {msg.role === 'user' ? 'Användare' : 'Magister T'}
+                        </span>
+                        <span className="text-xs text-warm-500">
+                          {formatDate(msg.created_at)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-warm-200 whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default AdminPage
