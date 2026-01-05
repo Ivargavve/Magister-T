@@ -86,8 +86,8 @@ function Sidebar({
       if (buttonEl) {
         const rect = buttonEl.getBoundingClientRect()
         const spaceBelow = window.innerHeight - rect.bottom
-        // If less than 150px below, show menu above
-        setMenuPosition(spaceBelow < 150 ? 'above' : 'below')
+        // If less than 280px below (footer is ~250px), show menu above
+        setMenuPosition(spaceBelow < 280 ? 'above' : 'below')
       }
       setMenuOpenId(chatId)
     }
