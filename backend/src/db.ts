@@ -84,11 +84,23 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- System prompts table for AI configuration
+CREATE TABLE IF NOT EXISTS system_prompts (
+  id SERIAL PRIMARY KEY,
+  key VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_chats_user_id ON chats(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
 CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_system_prompts_key ON system_prompts(key);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -115,6 +127,12 @@ CREATE TRIGGER update_user_settings_updated_at
 DROP TRIGGER IF EXISTS update_chats_updated_at ON chats;
 CREATE TRIGGER update_chats_updated_at
     BEFORE UPDATE ON chats
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_system_prompts_updated_at ON system_prompts;
+CREATE TRIGGER update_system_prompts_updated_at
+    BEFORE UPDATE ON system_prompts
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 `;
@@ -304,6 +322,48 @@ export async function upsertUserSettings(
        language = COALESCE($3, user_settings.language)
      RETURNING *`,
     [userId, settings.theme || 'dark', settings.language || 'sv']
+  );
+  return result[0];
+}
+
+// System prompt operations
+export interface SystemPrompt {
+  id: number;
+  key: string;
+  name: string;
+  description: string | null;
+  content: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export async function getAllSystemPrompts(): Promise<SystemPrompt[]> {
+  return query<SystemPrompt>('SELECT * FROM system_prompts ORDER BY key');
+}
+
+export async function getSystemPromptByKey(key: string): Promise<SystemPrompt | null> {
+  const prompts = await query<SystemPrompt>(
+    'SELECT * FROM system_prompts WHERE key = $1',
+    [key]
+  );
+  return prompts[0] || null;
+}
+
+export async function upsertSystemPrompt(
+  key: string,
+  name: string,
+  description: string | null,
+  content: string
+): Promise<SystemPrompt> {
+  const result = await query<SystemPrompt>(
+    `INSERT INTO system_prompts (key, name, description, content)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (key) DO UPDATE SET
+       name = EXCLUDED.name,
+       description = EXCLUDED.description,
+       content = EXCLUDED.content
+     RETURNING *`,
+    [key, name, description, content]
   );
   return result[0];
 }

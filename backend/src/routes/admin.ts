@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { requireAuth } from '../middleware/auth'
-import { query } from '../db'
+import { query, getAllSystemPrompts, getSystemPromptByKey, upsertSystemPrompt } from '../db'
 
 const router = Router()
 
@@ -109,6 +109,60 @@ router.get('/stats', requireAuth, requireAdmin, async (req: Request, res: Respon
   } catch (error) {
     console.error('Error fetching admin stats:', error)
     res.status(500).json({ error: 'Failed to fetch stats' })
+  }
+})
+
+// Get all system prompts
+router.get('/prompts', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const prompts = await getAllSystemPrompts()
+    res.json({ prompts })
+  } catch (error) {
+    console.error('Error fetching prompts:', error)
+    res.status(500).json({ error: 'Failed to fetch prompts' })
+  }
+})
+
+// Get a specific prompt by key
+router.get('/prompts/:key', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { key } = req.params
+    const prompt = await getSystemPromptByKey(key)
+
+    if (!prompt) {
+      res.status(404).json({ error: 'Prompt not found' })
+      return
+    }
+
+    res.json({ prompt })
+  } catch (error) {
+    console.error('Error fetching prompt:', error)
+    res.status(500).json({ error: 'Failed to fetch prompt' })
+  }
+})
+
+// Update a prompt
+router.put('/prompts/:key', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { key } = req.params
+    const { name, description, content } = req.body
+
+    if (!content || typeof content !== 'string') {
+      res.status(400).json({ error: 'Content is required' })
+      return
+    }
+
+    const prompt = await upsertSystemPrompt(
+      key,
+      name || key,
+      description || null,
+      content
+    )
+
+    res.json({ prompt })
+  } catch (error) {
+    console.error('Error updating prompt:', error)
+    res.status(500).json({ error: 'Failed to update prompt' })
   }
 })
 

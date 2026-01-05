@@ -10,7 +10,7 @@ import {
   addMessage,
 } from '../db';
 import { requireAuth, optionalAuth } from '../middleware/auth';
-import { MAGISTER_T_SYSTEM_PROMPT } from '../lib/prompt';
+import { getSystemPrompt } from '../lib/prompt';
 
 const router = Router();
 
@@ -184,9 +184,10 @@ router.post('/:id/messages', requireAuth, async (req: Request, res: Response): P
     const messages = await getMessagesForChat(chatId);
 
     // Generate AI response
+    const systemPrompt = await getSystemPrompt();
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
-      systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     });
 
     // Build conversation history for Gemini
@@ -279,9 +280,10 @@ router.post('/:id/messages/stream', requireAuth, async (req: Request, res: Respo
     res.flushHeaders();
 
     // Generate AI response with streaming
+    const systemPrompt = await getSystemPrompt();
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
-      systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     });
 
     const chatHistory = messages.slice(0, -1).map((msg) => ({
@@ -350,9 +352,10 @@ router.post('/anonymous', optionalAuth, async (req: Request, res: Response): Pro
       return;
     }
 
+    const systemPrompt = await getSystemPrompt();
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
-      systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     });
 
     // Build conversation history for Gemini

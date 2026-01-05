@@ -65,6 +65,16 @@ interface Stats {
   avgMessagesPerChat: number
 }
 
+interface SystemPrompt {
+  id: number
+  key: string
+  name: string
+  description: string | null
+  content: string
+  created_at: string
+  updated_at: string
+}
+
 interface AdminPageProps {
   onBack: () => void
 }
@@ -81,6 +91,11 @@ function AdminPage({ onBack }: AdminPageProps) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [activeTab, setActiveTab] = useState<'chats' | 'prompts'>('chats')
+  const [prompts, setPrompts] = useState<SystemPrompt[]>([])
+  const [editingPrompts, setEditingPrompts] = useState<Record<string, string>>({})
+  const [savingPrompt, setSavingPrompt] = useState<string | null>(null)
+  const [promptSuccess, setPromptSuccess] = useState<string | null>(null)
 
   // Update clock every second
   useEffect(() => {
@@ -99,11 +114,14 @@ function AdminPage({ onBack }: AdminPageProps) {
     setError(null)
 
     try {
-      const [chatsRes, statsRes] = await Promise.all([
+      const [chatsRes, statsRes, promptsRes] = await Promise.all([
         fetch(`${API_URL}/api/admin/chats`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
         fetch(`${API_URL}/api/admin/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${API_URL}/api/admin/prompts`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ])
@@ -117,10 +135,59 @@ function AdminPage({ onBack }: AdminPageProps) {
 
       setChats(chatsData.chats || [])
       setStats(statsData.stats || null)
+
+      if (promptsRes.ok) {
+        const promptsData = await promptsRes.json()
+        setPrompts(promptsData.prompts || [])
+        // Initialize editing state with current prompt values
+        const initialEditing: Record<string, string> = {}
+        for (const prompt of promptsData.prompts || []) {
+          initialEditing[prompt.key] = prompt.content
+        }
+        setEditingPrompts(initialEditing)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const savePrompt = async (key: string) => {
+    if (!token) return
+
+    setSavingPrompt(key)
+    setPromptSuccess(null)
+
+    try {
+      const prompt = prompts.find(p => p.key === key)
+      if (!prompt) return
+
+      const res = await fetch(`${API_URL}/api/admin/prompts/${key}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: prompt.name,
+          description: prompt.description,
+          content: editingPrompts[key]
+        })
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to save prompt')
+      }
+
+      const data = await res.json()
+      setPrompts(prompts.map(p => p.key === key ? data.prompt : p))
+      setPromptSuccess(key)
+      setTimeout(() => setPromptSuccess(null), 3000)
+    } catch (err) {
+      console.error('Error saving prompt:', err)
+    } finally {
+      setSavingPrompt(null)
     }
   }
 
@@ -232,6 +299,38 @@ function AdminPage({ onBack }: AdminPageProps) {
           )}
         </div>
 
+        {/* Tabs */}
+        <div className="bg-black/50 border-b border-white/10 px-6">
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab('chats')}
+              className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === 'chats'
+                  ? 'text-white'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              Chattar
+              {activeTab === 'chats' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('prompts')}
+              className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+                activeTab === 'prompts'
+                  ? 'text-white'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              AI-Prompts
+              {activeTab === 'prompts' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+              )}
+            </button>
+          </div>
+        </div>
+
         {/* Main content */}
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
@@ -242,7 +341,7 @@ function AdminPage({ onBack }: AdminPageProps) {
             <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-red-200">
               {error}
             </div>
-          ) : (
+          ) : activeTab === 'chats' ? (
             <div className="space-y-6">
               {/* Chats list */}
               <div className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
@@ -283,6 +382,68 @@ function AdminPage({ onBack }: AdminPageProps) {
                   )}
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Prompts editor */}
+              {prompts.length === 0 ? (
+                <div className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 p-8 text-center">
+                  <p className="text-white/50">Inga prompts hittades. Starta om servern för att skapa standardprompts.</p>
+                </div>
+              ) : (
+                prompts.map((prompt) => (
+                  <div
+                    key={prompt.key}
+                    className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden"
+                  >
+                    <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                      <div>
+                        <h2 className="font-semibold text-white">{prompt.name}</h2>
+                        {prompt.description && (
+                          <p className="text-sm text-white/50 mt-0.5">{prompt.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {promptSuccess === prompt.key && (
+                          <span className="text-sm text-green-400">Sparat!</span>
+                        )}
+                        <button
+                          onClick={() => savePrompt(prompt.key)}
+                          disabled={savingPrompt === prompt.key || editingPrompts[prompt.key] === prompt.content}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            editingPrompts[prompt.key] === prompt.content
+                              ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                              : 'bg-white/20 hover:bg-white/30 text-white'
+                          }`}
+                        >
+                          {savingPrompt === prompt.key ? (
+                            <span className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                              Sparar...
+                            </span>
+                          ) : (
+                            'Spara ändringar'
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <textarea
+                        value={editingPrompts[prompt.key] || ''}
+                        onChange={(e) => setEditingPrompts({
+                          ...editingPrompts,
+                          [prompt.key]: e.target.value
+                        })}
+                        className="w-full h-64 bg-black/50 border border-white/10 rounded-lg p-4 text-white text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-white/20"
+                        placeholder="Skriv prompt här..."
+                      />
+                      <p className="text-xs text-white/40 mt-2">
+                        Senast uppdaterad: {formatDate(prompt.updated_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>

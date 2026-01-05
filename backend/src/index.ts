@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import chatsRoutes from './routes/chats';
 import usersRoutes from './routes/users';
 import adminRoutes from './routes/admin';
+import { initializeDefaultPrompts, getSystemPrompt } from './lib/prompt';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -82,7 +83,6 @@ app.use('/api/admin', adminRoutes);
 app.post('/api/chat', async (req: Request, res: Response) => {
   try {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const { MAGISTER_T_SYSTEM_PROMPT } = await import('./lib/prompt');
 
     const { messages } = req.body;
 
@@ -94,10 +94,13 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     const apiKey = process.env.GEMINI_API_KEY || '';
     console.log('Using Gemini API key (first 10 chars):', apiKey.substring(0, 10) + '...');
 
+    // Get system prompt from database
+    const systemPrompt = await getSystemPrompt();
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
-      systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     });
 
     const chatHistory = messages.slice(0, -1).map((msg: { role: string; content: string }) => ({
@@ -166,6 +169,10 @@ async function startServer() {
     if (process.env.DATABASE_URL) {
       await initializeDatabase();
       console.log('Database initialized');
+
+      // Initialize default prompts
+      await initializeDefaultPrompts();
+      console.log('Default prompts initialized');
     } else {
       console.warn('DATABASE_URL not set, running without database');
     }
