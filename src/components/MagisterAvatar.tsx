@@ -26,6 +26,9 @@ preloadImages.forEach(src => {
   img.src = src
 })
 
+// Minimum time between blinks in ms
+const MIN_BLINK_COOLDOWN = 3000
+
 function MagisterPortrait({ isThinking = false, isResponding = false, showWink = false }: MagisterPortraitProps) {
   const [currentOriginal, setCurrentOriginal] = useState<1 | 2>(1)
   const [avatarState, setAvatarState] = useState<AvatarState>('idle')
@@ -35,6 +38,9 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
   const readingStartTimeRef = useRef<number>(0)
   const ideaStartTimeRef = useRef<number>(0)
   const minTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastBlinkTimeRef = useRef<number>(0)
+  const blinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const blinkDurationRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Handle state transitions based on props
   useEffect(() => {
@@ -140,28 +146,44 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
     return () => clearTimeout(timeoutId)
   }, [avatarState])
 
-  // Random blinking during idle
+  // Random blinking during idle - uses refs to prevent multiple instances
   useEffect(() => {
+    // Clear any existing blink timeouts
+    if (blinkTimeoutRef.current) {
+      clearTimeout(blinkTimeoutRef.current)
+      blinkTimeoutRef.current = null
+    }
+    if (blinkDurationRef.current) {
+      clearTimeout(blinkDurationRef.current)
+      blinkDurationRef.current = null
+    }
+
     if (avatarState !== 'idle') {
       setIsBlinking(false)
       return
     }
 
-    let blinkTimeoutId: ReturnType<typeof setTimeout> | null = null
-    let blinkDurationId: ReturnType<typeof setTimeout> | null = null
-    let isActive = true
-
     const scheduleBlink = () => {
-      if (!isActive) return
       // Random interval between 4-8 seconds
       const interval = Math.random() * 4000 + 4000
-      blinkTimeoutId = setTimeout(() => {
-        if (!isActive) return
+
+      blinkTimeoutRef.current = setTimeout(() => {
+        // Check cooldown - don't blink if we blinked too recently
+        const timeSinceLastBlink = Date.now() - lastBlinkTimeRef.current
+        if (timeSinceLastBlink < MIN_BLINK_COOLDOWN) {
+          // Schedule next attempt after cooldown expires
+          scheduleBlink()
+          return
+        }
+
+        // Do the blink
+        lastBlinkTimeRef.current = Date.now()
         setIsBlinking(true)
-        // Blink for 150ms
-        blinkDurationId = setTimeout(() => {
-          if (!isActive) return
+
+        // End blink after 150ms
+        blinkDurationRef.current = setTimeout(() => {
           setIsBlinking(false)
+          // Schedule next blink
           scheduleBlink()
         }, 150)
       }, interval)
@@ -170,9 +192,14 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
     scheduleBlink()
 
     return () => {
-      isActive = false
-      if (blinkTimeoutId) clearTimeout(blinkTimeoutId)
-      if (blinkDurationId) clearTimeout(blinkDurationId)
+      if (blinkTimeoutRef.current) {
+        clearTimeout(blinkTimeoutRef.current)
+        blinkTimeoutRef.current = null
+      }
+      if (blinkDurationRef.current) {
+        clearTimeout(blinkDurationRef.current)
+        blinkDurationRef.current = null
+      }
     }
   }, [avatarState])
 
