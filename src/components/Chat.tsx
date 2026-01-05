@@ -7,6 +7,7 @@ import chatBackgroundPaper from '../assets/chatbackgroundpaper.png'
 import topOfChatPlank from '../assets/topofchatplank.png'
 import classroomBackground from '../assets/classlighter.jpg'
 import chalkboard from '../assets/chalkboard.png'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface ChatProps {
   messages: Message[]
@@ -23,6 +24,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [showWink, setShowWink] = useState(false)
   const prevMessagesLengthRef = useRef(messages.length)
+  const { t } = useLanguage()
 
   // Simple scroll behavior: always scroll to bottom when messages change
   // This handles: loading chats, sending messages, receiving responses
@@ -104,25 +106,25 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
                 {/* Text content on the chalkboard - original positioning preserved for desktop */}
                 <div className="absolute inset-0 flex flex-col items-center justify-start px-[12%] md:px-24 pt-[30%] md:pt-48 pb-[8%] md:pb-20" style={{ transform: 'rotate(-2deg)' }}>
                   <h2 className="text-[4.5vw] md:text-3xl font-bold text-white mb-1 md:mb-3 font-chalk drop-shadow-sm">
-                    Hej! Jag är Magister T
+                    {t('welcomeMessage')}
                   </h2>
                   <p className="text-white/90 text-center leading-relaxed font-chalk text-[3vw] md:text-lg mb-2 md:mb-8">
-                    Ställ en fråga så lär vi oss tillsammans!
+                    {t('suggestionText')}
                   </p>
 
                   {/* Chalk-style suggestion buttons */}
                   <div className="grid gap-1.5 md:gap-3 w-full max-w-[85%] md:max-w-sm">
                     <ChalkButton
-                      text="Hur fungerar en for-loop?"
-                      onClick={() => onSendMessage('Hur fungerar en for-loop?')}
+                      text={t('suggestion1')}
+                      onClick={() => onSendMessage(t('suggestion1'))}
                     />
                     <ChalkButton
-                      text="Vad är let och const?"
-                      onClick={() => onSendMessage('Vad är skillnaden mellan let och const?')}
+                      text={t('suggestion2')}
+                      onClick={() => onSendMessage(t('suggestion2Alt'))}
                     />
                     <ChalkButton
-                      text="Förklara vad en API är"
-                      onClick={() => onSendMessage('Förklara vad en API är')}
+                      text={t('suggestion3')}
+                      onClick={() => onSendMessage(t('suggestion3'))}
                     />
                   </div>
                 </div>
@@ -139,7 +141,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
                 <div className="flex justify-start animate-fade-in mb-4">
                   <div className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-magister-600">Magister T funderar</span>
+                      <span className="text-sm font-bold text-magister-600">{t('magisterTThinking')}</span>
                       <div className="flex gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-magister-500 typing-dot" />
                         <span className="w-1.5 h-1.5 rounded-full bg-magister-500 typing-dot" />

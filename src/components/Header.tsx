@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
+import LanguageToggle from './LanguageToggle'
 
 interface HeaderProps {
   onSettingsClick: () => void
@@ -8,6 +10,7 @@ interface HeaderProps {
 
 function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
   const { user, logout, isAuthenticated } = useAuth()
+  const { t } = useLanguage()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -39,13 +42,16 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
 
   return (
     <header className="flex items-center justify-end px-6 py-4 border-b border-white/5">
-      {/* Right side: Settings and User menu */}
+      {/* Right side: Language toggle, Settings and User menu */}
       <div className="flex items-center gap-2">
+        {/* Language toggle */}
+        <LanguageToggle />
+
         {/* Settings button */}
         <button
           onClick={onSettingsClick}
           className="p-2.5 rounded-xl text-dark-400 hover:text-dark-200 hover:bg-white/5 transition-all duration-200"
-          title="Inställningar"
+          title={t('settings')}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -74,12 +80,12 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/5 transition-all duration-200"
-              title={user?.name || 'Användarmeny'}
+              title={user?.name || t('userMenu')}
             >
               {user?.profile_image ? (
                 <img
                   src={user.profile_image}
-                  alt={user.name || 'Användare'}
+                  alt={user.name || t('user')}
                   className="w-8 h-8 rounded-full object-cover border-2 border-transparent hover:border-magister-500/50 transition-colors"
                   referrerPolicy="no-referrer"
                 />
@@ -99,7 +105,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
                     {user?.profile_image ? (
                       <img
                         src={user.profile_image}
-                        alt={user.name || 'Användare'}
+                        alt={user.name || t('user')}
                         className="w-10 h-10 rounded-full object-cover"
                         referrerPolicy="no-referrer"
                       />
@@ -110,7 +116,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-dark-100 truncate">
-                        {user?.name || 'Användare'}
+                        {user?.name || t('user')}
                       </p>
                       <p className="text-xs text-dark-400 truncate">
                         {user?.email || ''}
@@ -139,7 +145,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
                         d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
                       />
                     </svg>
-                    Logga ut
+                    {t('logout')}
                   </button>
                 </div>
               </div>
@@ -164,7 +170,7 @@ function Header({ onSettingsClick, onLoginClick }: HeaderProps) {
                 d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
               />
             </svg>
-            Logga in
+            {t('login')}
           </button>
         )}
       </div>

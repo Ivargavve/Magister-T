@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 
 interface InputProps {
   onSend: (message: string) => void
@@ -10,6 +11,7 @@ interface InputProps {
 function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { t } = useLanguage()
 
   // Auto-resize textarea
   useEffect(() => {
@@ -50,7 +52,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Skriv din fråga här..."
+              placeholder={t('inputPlaceholder')}
               disabled={disabled}
               autoFocus
               rows={1}
@@ -62,7 +64,7 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
                 <button
                   onClick={onStopStreaming}
                   className="p-2.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-500 transition-colors"
-                  title="Stoppa generering"
+                  title={t('stopGenerating')}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
