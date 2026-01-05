@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 interface SettingsProps {
   isOpen: boolean
@@ -7,7 +10,10 @@ interface SettingsProps {
 }
 
 function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
+  const { isAuthenticated, token, logout } = useAuth()
   const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+  const [showConfirmDeleteAccount, setShowConfirmDeleteAccount] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
 
   if (!isOpen) return null
 
@@ -15,6 +21,32 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
     onClearAllChats()
     setShowConfirmDelete(false)
     onClose()
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!token) return
+
+    setIsDeletingAccount(true)
+    try {
+      const response = await fetch(`${API_URL}/api/users/me`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        logout()
+        onClose()
+      } else {
+        console.error('Failed to delete account')
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error)
+    } finally {
+      setIsDeletingAccount(false)
+      setShowConfirmDeleteAccount(false)
+    }
   }
 
   return (
@@ -127,6 +159,73 @@ function Settings({ isOpen, onClose, onClearAllChats }: SettingsProps) {
                     </button>
                   </div>
                 </div>
+              )}
+
+              {/* Delete Account - only for authenticated users */}
+              {isAuthenticated && (
+                !showConfirmDeleteAccount ? (
+                  <button
+                    onClick={() => setShowConfirmDeleteAccount(true)}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-600/20 text-red-700 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium">Radera konto och all data</span>
+                    </div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                      />
+                    </svg>
+                  </button>
+                ) : (
+                  <div className="p-4 rounded-xl bg-red-600/10 border border-red-600/20 space-y-3">
+                    <p className="text-sm text-red-700 font-medium">
+                      Är du helt säker?
+                    </p>
+                    <p className="text-xs text-red-600">
+                      Detta raderar ditt konto och ALL data permanent. Detta kan inte ångras.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleDeleteAccount}
+                        disabled={isDeletingAccount}
+                        className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white text-sm font-medium transition-colors"
+                      >
+                        {isDeletingAccount ? 'Raderar...' : 'Ja, radera allt'}
+                      </button>
+                      <button
+                        onClick={() => setShowConfirmDeleteAccount(false)}
+                        disabled={isDeletingAccount}
+                        className="flex-1 px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-medium transition-colors"
+                      >
+                        Avbryt
+                      </button>
+                    </div>
+                  </div>
+                )
               )}
             </div>
           </div>

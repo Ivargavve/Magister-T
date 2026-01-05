@@ -260,10 +260,12 @@ function App() {
         <Sidebar
           onNewChat={() => {
             handleNewChat()
+            setShowAdmin(false)
             setSidebarOpen(false)
           }}
           onSelectChat={(chatId) => {
             handleSelectChat(chatId)
+            setShowAdmin(false)
             setSidebarOpen(false)
           }}
           onDeleteChat={handleDeleteChat}

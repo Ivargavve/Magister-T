@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { updateUser, getUserSettings, upsertUserSettings } from '../db';
+import { updateUser, getUserSettings, upsertUserSettings, query } from '../db';
 import { requireAuth } from '../middleware/auth';
 
 const router = Router();
@@ -58,6 +58,31 @@ router.get('/settings', requireAuth, async (req: Request, res: Response): Promis
   } catch (error) {
     console.error('Get settings error:', error);
     res.status(500).json({ error: 'Failed to get settings' });
+  }
+});
+
+// DELETE /api/users/me - Delete user account and all data
+router.delete('/me', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId!;
+
+    // Delete in order due to foreign key constraints:
+    // 1. Delete all messages from user's chats
+    await query('DELETE FROM messages WHERE chat_id IN (SELECT id FROM chats WHERE user_id = $1)', [userId]);
+
+    // 2. Delete all user's chats
+    await query('DELETE FROM chats WHERE user_id = $1', [userId]);
+
+    // 3. Delete user settings
+    await query('DELETE FROM user_settings WHERE user_id = $1', [userId]);
+
+    // 4. Delete the user
+    await query('DELETE FROM users WHERE id = $1', [userId]);
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 
