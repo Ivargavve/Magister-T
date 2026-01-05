@@ -46,9 +46,11 @@ function Sidebar({
 }: SidebarProps) {
   const { isAuthenticated, user, logout } = useAuth()
   const [menuOpenId, setMenuOpenId] = useState<number | string | null>(null)
+  const [menuPosition, setMenuPosition] = useState<'below' | 'above'>('below')
   const [editingChatId, setEditingChatId] = useState<number | string | null>(null)
   const [editValue, setEditValue] = useState('')
   const editInputRef = useRef<HTMLInputElement>(null)
+  const menuButtonRefs = useRef<Map<number | string, HTMLDivElement>>(new Map())
 
   // Focus input when editing
   useEffect(() => {
@@ -76,7 +78,19 @@ function Sidebar({
 
   const handleMenuClick = (e: React.MouseEvent, chatId: number | string) => {
     e.stopPropagation()
-    setMenuOpenId(menuOpenId === chatId ? null : chatId)
+    if (menuOpenId === chatId) {
+      setMenuOpenId(null)
+    } else {
+      // Check if menu should appear above or below
+      const buttonEl = menuButtonRefs.current.get(chatId)
+      if (buttonEl) {
+        const rect = buttonEl.getBoundingClientRect()
+        const spaceBelow = window.innerHeight - rect.bottom
+        // If less than 150px below, show menu above
+        setMenuPosition(spaceBelow < 150 ? 'above' : 'below')
+      }
+      setMenuOpenId(chatId)
+    }
   }
 
   const handleDelete = (e: React.MouseEvent, chatId: number | string) => {
@@ -153,6 +167,7 @@ function Sidebar({
             </div>
             {/* Clip/link icon - click for menu */}
             <div
+              ref={(el) => { if (el) menuButtonRefs.current.set(chat.id, el) }}
               onClick={(e) => handleMenuClick(e, chat.id)}
               className="flex-shrink-0 w-7 h-7 rounded-full bg-warm-800/10 hover:bg-warm-800/25 flex items-center justify-center cursor-pointer transition-colors"
             >
@@ -168,7 +183,9 @@ function Sidebar({
       {menuOpenId === chat.id && (
         <>
           <div className="fixed inset-0 z-10" onClick={handleBackdropClick} />
-          <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-xl py-1 min-w-[140px] border border-warm-200">
+          <div className={`absolute right-0 z-20 bg-white rounded-lg shadow-xl py-1 min-w-[140px] border border-warm-200 ${
+            menuPosition === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}>
             <button
               onClick={(e) => handleStartRename(e, chat.id, chat.title)}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 transition-colors"
