@@ -57,7 +57,7 @@ router.get('/chats', requireAuth, requireAdmin, async (req: Request, res: Respon
       LIMIT 100`
     )
 
-    res.json({ chats: chats.rows })
+    res.json({ chats })
   } catch (error) {
     console.error('Error fetching admin chats:', error)
     res.status(500).json({ error: 'Failed to fetch chats' })
@@ -82,7 +82,7 @@ router.get('/chats/:chatId/messages', requireAuth, requireAdmin, async (req: Req
       [chatId]
     )
 
-    res.json({ messages: messages.rows })
+    res.json({ messages })
   } catch (error) {
     console.error('Error fetching chat messages:', error)
     res.status(500).json({ error: 'Failed to fetch messages' })
@@ -111,10 +111,10 @@ router.get('/stats', requireAuth, requireAdmin, async (req: Request, res: Respon
 
     res.json({
       stats: {
-        totalUsers: parseInt(userCount.rows[0]?.count || '0'),
-        totalChats: parseInt(chatCount.rows[0]?.count || '0'),
-        totalMessages: parseInt(messageCount.rows[0]?.count || '0'),
-        recentActivity: recentActivity.rows
+        totalUsers: parseInt(userCount[0]?.count || '0'),
+        totalChats: parseInt(chatCount[0]?.count || '0'),
+        totalMessages: parseInt(messageCount[0]?.count || '0'),
+        recentActivity
       }
     })
   } catch (error) {
