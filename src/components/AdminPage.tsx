@@ -5,9 +5,6 @@ import classroomBackground from '../assets/classlighter.jpg'
 interface ChatItem {
   id: number
   title: string
-  user_id: number
-  user_email: string
-  user_name: string
   message_count: number
   created_at: string
   updated_at: string
@@ -139,26 +136,26 @@ function AdminPage({ onBack }: AdminPageProps) {
       {/* Content */}
       <div className="relative flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-warm-900/90 backdrop-blur-sm border-b border-warm-700 px-6 py-4 flex items-center gap-4">
+        <div className="bg-black/70 backdrop-blur-sm border-b border-white/10 px-6 py-4 flex items-center gap-4">
           <button
             onClick={onBack}
-            className="p-2 rounded-lg bg-warm-800 hover:bg-warm-700 text-warm-200 transition-colors"
+            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
           </button>
-          <h1 className="text-xl font-semibold text-warm-100">Admin Panel</h1>
+          <h1 className="text-xl font-semibold text-white">Admin Panel</h1>
         </div>
 
         {/* Main content */}
         <div className="flex-1 overflow-y-auto p-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-4 border-warm-700 border-t-warm-400 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-white/20 border-t-white/70 rounded-full animate-spin" />
             </div>
           ) : error ? (
-            <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-red-200">
+            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4 text-red-200">
               {error}
             </div>
           ) : (
@@ -166,51 +163,48 @@ function AdminPage({ onBack }: AdminPageProps) {
               {/* Stats cards */}
               {stats && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl p-4 border border-warm-700">
-                    <p className="text-warm-400 text-sm">Totalt användare</p>
-                    <p className="text-3xl font-bold text-warm-100">{stats.totalUsers}</p>
+                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                    <p className="text-white/60 text-sm">Totalt användare</p>
+                    <p className="text-3xl font-bold text-white">{stats.totalUsers}</p>
                   </div>
-                  <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl p-4 border border-warm-700">
-                    <p className="text-warm-400 text-sm">Totalt chattar</p>
-                    <p className="text-3xl font-bold text-warm-100">{stats.totalChats}</p>
+                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                    <p className="text-white/60 text-sm">Totalt chattar</p>
+                    <p className="text-3xl font-bold text-white">{stats.totalChats}</p>
                   </div>
-                  <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl p-4 border border-warm-700">
-                    <p className="text-warm-400 text-sm">Totalt meddelanden</p>
-                    <p className="text-3xl font-bold text-warm-100">{stats.totalMessages}</p>
+                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                    <p className="text-white/60 text-sm">Totalt meddelanden</p>
+                    <p className="text-3xl font-bold text-white">{stats.totalMessages}</p>
                   </div>
                 </div>
               )}
 
               {/* Chats list */}
-              <div className="bg-warm-900/80 backdrop-blur-sm rounded-xl border border-warm-700 overflow-hidden">
-                <div className="px-4 py-3 border-b border-warm-700">
-                  <h2 className="font-semibold text-warm-100">Senaste chattar</h2>
+              <div className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+                <div className="px-4 py-3 border-b border-white/10">
+                  <h2 className="font-semibold text-white">Senaste chattar</h2>
                 </div>
-                <div className="divide-y divide-warm-700/50">
+                <div className="divide-y divide-white/5">
                   {chats.length === 0 ? (
-                    <p className="px-4 py-8 text-center text-warm-400">Inga chattar än</p>
+                    <p className="px-4 py-8 text-center text-white/50">Inga chattar än</p>
                   ) : (
                     chats.map((chat) => (
                       <div
                         key={chat.id}
-                        className="px-4 py-3 hover:bg-warm-800/50 cursor-pointer transition-colors"
+                        className="px-4 py-3 hover:bg-white/5 cursor-pointer transition-colors"
                         onClick={() => loadMessages(chat)}
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-warm-100 truncate">{chat.title}</p>
-                            <p className="text-sm text-warm-400 truncate">
-                              {chat.user_name} ({chat.user_email})
-                            </p>
+                            <p className="font-medium text-white truncate">{chat.title}</p>
                             {chat.first_message && (
-                              <p className="text-sm text-warm-500 truncate mt-1">
+                              <p className="text-sm text-white/50 truncate mt-1">
                                 "{chat.first_message}"
                               </p>
                             )}
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-sm text-warm-400">{formatRelativeTime(chat.updated_at)}</p>
-                            <p className="text-xs text-warm-500">{chat.message_count} meddelanden</p>
+                            <p className="text-sm text-white/60">{formatRelativeTime(chat.updated_at)}</p>
+                            <p className="text-xs text-white/40">{chat.message_count} meddelanden</p>
                           </div>
                         </div>
                       </div>
@@ -224,19 +218,19 @@ function AdminPage({ onBack }: AdminPageProps) {
 
         {/* Chat detail modal */}
         {selectedChat && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-warm-900 rounded-xl border border-warm-700 w-full max-w-2xl max-h-[80vh] flex flex-col">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-black/80 backdrop-blur-md rounded-xl border border-white/10 w-full max-w-2xl max-h-[80vh] flex flex-col">
               {/* Modal header */}
-              <div className="px-4 py-3 border-b border-warm-700 flex items-center justify-between">
+              <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-warm-100">{selectedChat.title}</h3>
-                  <p className="text-sm text-warm-400">
-                    {selectedChat.user_name} - {formatDate(selectedChat.created_at)}
+                  <h3 className="font-semibold text-white">{selectedChat.title}</h3>
+                  <p className="text-sm text-white/50">
+                    {formatDate(selectedChat.created_at)}
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedChat(null)}
-                  className="p-2 rounded-lg hover:bg-warm-800 text-warm-400 hover:text-warm-200 transition-colors"
+                  className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -248,31 +242,31 @@ function AdminPage({ onBack }: AdminPageProps) {
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {isLoadingMessages ? (
                   <div className="flex items-center justify-center py-8">
-                    <div className="w-6 h-6 border-2 border-warm-700 border-t-warm-400 rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
                   </div>
                 ) : messages.length === 0 ? (
-                  <p className="text-center text-warm-400 py-8">Inga meddelanden</p>
+                  <p className="text-center text-white/50 py-8">Inga meddelanden</p>
                 ) : (
                   messages.map((msg) => (
                     <div
                       key={msg.id}
                       className={`p-3 rounded-lg ${
                         msg.role === 'user'
-                          ? 'bg-magister-600/20 border border-magister-600/30 ml-8'
-                          : 'bg-warm-800 border border-warm-700 mr-8'
+                          ? 'bg-blue-500/20 border border-blue-500/30 ml-8'
+                          : 'bg-white/10 border border-white/10 mr-8'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`text-xs font-medium ${
-                          msg.role === 'user' ? 'text-magister-400' : 'text-warm-400'
+                          msg.role === 'user' ? 'text-blue-400' : 'text-white/60'
                         }`}>
                           {msg.role === 'user' ? 'Användare' : 'Magister T'}
                         </span>
-                        <span className="text-xs text-warm-500">
+                        <span className="text-xs text-white/40">
                           {formatDate(msg.created_at)}
                         </span>
                       </div>
-                      <p className="text-sm text-warm-200 whitespace-pre-wrap">{msg.content}</p>
+                      <p className="text-sm text-white/90 whitespace-pre-wrap">{msg.content}</p>
                     </div>
                   ))
                 )}
