@@ -66,11 +66,11 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
       style={{ backgroundImage: `url(${classroomBackground})` }}
     >
       {/* Main chat area */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:mr-[280px] xl:mr-[320px]">
+      <div className="flex-1 flex flex-col overflow-hidden lg:mr-[250px] xl:mr-[300px] 2xl:mr-[350px]">
         {/* Wood plank header - only show when there are messages */}
         {messages.length > 0 && (
           <div
-            className="h-16 bg-cover bg-center flex items-center justify-center flex-shrink-0 mt-6 mx-4 rounded-lg"
+            className="h-16 bg-cover bg-center flex items-center justify-center flex-shrink-0 mt-6 mx-0 md:mx-4 rounded-none md:rounded-lg"
             style={{ backgroundImage: `url(${topOfChatPlank})` }}
           >
             <h1 className="text-xl font-semibold text-warm-200 drop-shadow-lg font-serif">Magister T</h1>
@@ -79,7 +79,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
 
         {/* Chat content area with parchment background */}
         <div
-          className={`flex-1 overflow-y-auto ${messages.length > 0 ? 'bg-no-repeat mx-4 -mb-10 relative z-0' : ''}`}
+          className={`flex-1 overflow-y-auto ${messages.length > 0 ? 'bg-no-repeat mx-0 md:mx-4 -mb-10 relative z-0' : ''}`}
           style={messages.length > 0 ? {
             backgroundImage: `url(${chatBackgroundPaper})`,
             backgroundSize: '100% calc(100% + 40px)',
@@ -87,23 +87,23 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
           } : {}}
         >
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center px-4 text-center">
-              {/* Chalkboard with welcome message */}
+            <div className="h-full flex flex-col items-center justify-center px-2 md:px-4 text-center">
+              {/* Chalkboard with welcome message - responsive sizing */}
               <div
-                className="relative w-[700px] h-[530px] bg-contain bg-center bg-no-repeat"
+                className="relative w-[95vw] max-w-[700px] aspect-[700/530] bg-contain bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${chalkboard})`, transform: 'rotate(2deg)' }}
               >
-                {/* Text content on the chalkboard */}
-                <div className="absolute inset-0 flex flex-col items-center justify-start px-24 pt-48 pb-20" style={{ transform: 'rotate(-2deg)' }}>
-                  <h2 className="text-3xl font-bold text-white mb-3 font-chalk drop-shadow-sm">
+                {/* Text content on the chalkboard - original positioning preserved for desktop */}
+                <div className="absolute inset-0 flex flex-col items-center justify-start px-[12%] md:px-24 pt-[30%] md:pt-48 pb-[8%] md:pb-20" style={{ transform: 'rotate(-2deg)' }}>
+                  <h2 className="text-[4.5vw] md:text-3xl font-bold text-white mb-1 md:mb-3 font-chalk drop-shadow-sm">
                     Hej! Jag är Magister T
                   </h2>
-                  <p className="text-white/90 text-center leading-relaxed font-chalk text-lg mb-8">
+                  <p className="text-white/90 text-center leading-relaxed font-chalk text-[3vw] md:text-lg mb-2 md:mb-8">
                     Ställ en fråga så lär vi oss tillsammans!
                   </p>
 
                   {/* Chalk-style suggestion buttons */}
-                  <div className="grid gap-3 w-full max-w-sm">
+                  <div className="grid gap-1.5 md:gap-3 w-full max-w-[85%] md:max-w-sm">
                     <ChalkButton
                       text="Hur fungerar en for-loop?"
                       onClick={() => onSendMessage('Hur fungerar en for-loop?')}
@@ -121,7 +121,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
               </div>
             </div>
           ) : (
-            <div className="px-14 pt-10 pb-6">
+            <div className="px-12 md:px-14 pt-6 md:pt-10 pb-6">
               {messages
                 .filter(message => message.role === 'user' || message.content || message.isStreaming)
                 .map((message) => (
@@ -155,8 +155,8 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
         />
       </div>
 
-      {/* Right side: Magister T Portrait - absolutely positioned */}
-      <div className="hidden lg:block absolute right-0 bottom-0 w-[500px] xl:w-[550px] h-full pointer-events-none">
+      {/* Right side: Magister T Portrait - absolutely positioned with responsive scaling */}
+      <div className="hidden lg:block absolute right-0 bottom-0 w-[400px] xl:w-[500px] 2xl:w-[550px] h-full pointer-events-none">
           <MagisterPortrait
             isThinking={isLoading && !hasStreamingMessage}
             isResponding={isStreaming || hasStreamingMessage}
@@ -177,7 +177,7 @@ function ChalkButton({
   return (
     <button
       onClick={onClick}
-      className="group flex items-center gap-2 px-4 py-2 text-left text-sm text-white/80 hover:text-white border border-white/30 hover:border-white/60 rounded-lg transition-all duration-200 hover:bg-white/10 font-chalk"
+      className="group flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-1 md:py-2 text-left text-[2.8vw] md:text-sm text-white/80 hover:text-white border border-white/30 hover:border-white/60 rounded-lg transition-all duration-200 hover:bg-white/10 font-chalk"
     >
       <span className="text-white/60 group-hover:text-white transition-colors">→</span>
       <span className="flex-1">{text}</span>

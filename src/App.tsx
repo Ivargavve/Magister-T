@@ -18,6 +18,7 @@ function App() {
   const { isAuthenticated, isLoading: authLoading, token } = useAuth()
   const [showSettings, setShowSettings] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Authenticated chat list management
   const {
@@ -240,21 +241,59 @@ function App() {
 
   return (
     <div className="flex h-full bg-[#2a1f1a]">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Left Sidebar - Chat History */}
-      <Sidebar
-        onNewChat={handleNewChat}
-        onSelectChat={handleSelectChat}
-        onDeleteChat={handleDeleteChat}
-        onRenameChat={handleRenameChat}
-        chats={sidebarChats}
-        currentChatId={currentChatId}
-        isLoadingChats={isAuthenticated ? isLoadingAuthChats : false}
-        onSettingsClick={() => setShowSettings(true)}
-        onLoginClick={() => setShowLogin(true)}
-      />
+      {/* Hidden on mobile, shown as overlay when sidebarOpen is true */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <Sidebar
+          onNewChat={() => {
+            handleNewChat()
+            setSidebarOpen(false)
+          }}
+          onSelectChat={(chatId) => {
+            handleSelectChat(chatId)
+            setSidebarOpen(false)
+          }}
+          onDeleteChat={handleDeleteChat}
+          onRenameChat={handleRenameChat}
+          chats={sidebarChats}
+          currentChatId={currentChatId}
+          isLoadingChats={isAuthenticated ? isLoadingAuthChats : false}
+          onSettingsClick={() => {
+            setShowSettings(true)
+            setSidebarOpen(false)
+          }}
+          onLoginClick={() => {
+            setShowLogin(true)
+            setSidebarOpen(false)
+          }}
+          onClose={() => setSidebarOpen(false)}
+          isMobileOpen={sidebarOpen}
+        />
+      </div>
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="md:hidden fixed top-4 left-4 z-30 p-2 rounded-lg bg-warm-800/80 text-parchment-200 hover:bg-warm-700 transition-colors shadow-lg"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+
         {/* Chat area */}
         <Chat
           messages={messages}

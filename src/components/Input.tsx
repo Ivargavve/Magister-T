@@ -41,8 +41,8 @@ function Input({ onSend, disabled, isStreaming, onStopStreaming }: InputProps) {
   }
 
   return (
-    <div className="p-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="p-2 md:p-4">
+      <div className="max-w-3xl mx-auto w-[95%] md:w-auto">
         <div className="relative bg-black/40 backdrop-blur-sm px-4 py-3 rounded-2xl">
           <div className="flex items-center gap-3">
             <textarea

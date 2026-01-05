@@ -19,6 +19,8 @@ interface SidebarProps {
   isLoadingChats?: boolean
   onSettingsClick?: () => void
   onLoginClick?: () => void
+  onClose?: () => void
+  isMobileOpen?: boolean
 }
 
 function Sidebar({
@@ -31,6 +33,8 @@ function Sidebar({
   isLoadingChats,
   onSettingsClick,
   onLoginClick,
+  onClose,
+  isMobileOpen,
 }: SidebarProps) {
   const { isAuthenticated, user, logout } = useAuth()
   const [menuOpenId, setMenuOpenId] = useState<number | string | null>(null)
@@ -186,9 +190,21 @@ function Sidebar({
 
   return (
     <aside
-      className="w-64 h-full flex flex-col bg-cover bg-center bg-no-repeat"
+      className="w-64 h-full flex flex-col bg-cover bg-center bg-no-repeat relative"
       style={{ backgroundImage: `url(${sidebarBackground})` }}
     >
+      {/* Mobile close button */}
+      {isMobileOpen && (
+        <button
+          onClick={onClose}
+          className="md:hidden absolute top-3 right-3 z-10 p-2 rounded-lg bg-warm-800/80 text-parchment-200 hover:bg-warm-700 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )}
+
       {/* New chat button */}
       <div className="px-4 pt-4 pb-2">
         <button

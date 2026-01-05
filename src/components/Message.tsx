@@ -78,9 +78,9 @@ function MessageBubble({ message }: MessageBubbleProps) {
       className={`flex ${isAssistant ? 'justify-start' : 'justify-end'} animate-fade-in mb-4`}
     >
       <div
-        className={`max-w-[90%] transition-all duration-200 relative ${
+        className={`max-w-[85%] md:max-w-[90%] transition-all duration-200 relative ${
           isAssistant
-            ? 'px-5 py-4'
+            ? 'px-0 md:px-5 py-2 md:py-4'
             : ''
         }`}
       >
