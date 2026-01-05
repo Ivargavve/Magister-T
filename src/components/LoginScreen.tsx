@@ -115,7 +115,7 @@ function LoginScreen({ onSuccess }: LoginScreenProps) {
           )}
 
           <p className="text-gray-500 text-xs text-center mt-6">
-            Genom att logga in godkänner du våra användarvillkor
+            Din chatthistorik sparas på ditt konto
           </p>
         </div>
       </div>
