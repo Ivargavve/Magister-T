@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import classroomBackground from '../assets/classlighter.jpg'
 
 interface ChatItem {
@@ -44,9 +45,9 @@ const ANIMALS = [
   'Tvättbjörn', 'Skunk', 'Vessla', 'Iller', 'Chinchilla', 'Hamster'
 ]
 
-const getAnimalName = (userId: number): string => {
+const getAnimalName = (userId: number, anonymous: string): string => {
   const index = userId % ANIMALS.length
-  return `Anonym ${ANIMALS[index]}`
+  return `${anonymous} ${ANIMALS[index]}`
 }
 
 interface Message {
@@ -83,6 +84,7 @@ const API_URL = import.meta.env.VITE_API_URL || ''
 
 function AdminPage({ onBack }: AdminPageProps) {
   const { token } = useAuth()
+  const { t, language } = useLanguage()
   const [chats, setChats] = useState<ChatItem[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [selectedChat, setSelectedChat] = useState<ChatItem | null>(null)
@@ -232,11 +234,11 @@ function AdminPage({ onBack }: AdminPageProps) {
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Just nu'
-    if (diffMins < 60) return `${diffMins} min sedan`
-    if (diffHours < 24) return `${diffHours} tim sedan`
-    if (diffDays < 7) return `${diffDays} dagar sedan`
-    return date.toLocaleDateString('sv-SE')
+    if (diffMins < 1) return t('justNow')
+    if (diffMins < 60) return t('minutesAgo', diffMins)
+    if (diffHours < 24) return t('hoursAgo', diffHours)
+    if (diffDays < 7) return t('daysAgo', diffDays)
+    return date.toLocaleDateString(language === 'sv' ? 'sv-SE' : 'en-US')
   }
 
   return (
@@ -259,7 +261,7 @@ function AdminPage({ onBack }: AdminPageProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
           </button>
-          <h1 className="text-lg font-semibold text-white flex-shrink-0">Admin</h1>
+          <h1 className="text-lg font-semibold text-white flex-shrink-0">{t('admin')}</h1>
 
           {/* Stats in header */}
           {stats && (
@@ -267,29 +269,29 @@ function AdminPage({ onBack }: AdminPageProps) {
               {/* Mobile/Tablet: Compact stats */}
               <div className="flex items-center gap-1.5 xl:hidden">
                 <span className="font-semibold text-green-400">{stats.messagesToday ?? 0}</span>
-                <span className="text-white/40 text-xs">idag</span>
+                <span className="text-white/40 text-xs">{t('todayShort')}</span>
               </div>
 
               {/* Desktop: Full stats (xl: 1280px+) */}
               <div className="hidden xl:flex items-center gap-1.5">
-                <span className="text-white/50">Idag:</span>
+                <span className="text-white/50">{t('today')}:</span>
                 <span className="font-semibold text-green-400">{stats.chatsToday ?? 0}</span>
-                <span className="text-white/40">chattar</span>
+                <span className="text-white/40">{t('chats')}</span>
                 <span className="text-white/30">•</span>
                 <span className="font-semibold text-green-400">{stats.messagesToday ?? 0}</span>
-                <span className="text-white/40">msg</span>
+                <span className="text-white/40">{t('msg')}</span>
               </div>
               <div className="hidden xl:block text-white/30">|</div>
               <div className="hidden xl:flex items-center gap-1.5">
-                <span className="text-white/50">Totalt:</span>
+                <span className="text-white/50">{t('total')}:</span>
                 <span className="font-semibold text-white">{stats.totalUsers ?? 0}</span>
-                <span className="text-white/40">användare</span>
+                <span className="text-white/40">{t('users')}</span>
                 <span className="text-white/30">•</span>
                 <span className="font-semibold text-white">{stats.totalChats ?? 0}</span>
-                <span className="text-white/40">chattar</span>
+                <span className="text-white/40">{t('chats')}</span>
                 <span className="text-white/30">•</span>
                 <span className="font-semibold text-white">{stats.avgMessagesPerChat ?? 0}</span>
-                <span className="text-white/40">msg/chatt</span>
+                <span className="text-white/40">{t('msgPerChat')}</span>
               </div>
               <div className="hidden sm:block text-white/30">|</div>
               <div className="font-mono text-white/70 text-xs sm:text-sm flex-shrink-0">
@@ -310,7 +312,7 @@ function AdminPage({ onBack }: AdminPageProps) {
                   : 'text-white/50 hover:text-white/80'
               }`}
             >
-              Chattar
+              {t('chatsTab')}
               {activeTab === 'chats' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
               )}
@@ -323,7 +325,7 @@ function AdminPage({ onBack }: AdminPageProps) {
                   : 'text-white/50 hover:text-white/80'
               }`}
             >
-              AI-Prompts
+              {t('aiPromptsTab')}
               {activeTab === 'prompts' && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
               )}
@@ -346,11 +348,11 @@ function AdminPage({ onBack }: AdminPageProps) {
               {/* Chats list */}
               <div className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/10">
-                  <h2 className="font-semibold text-white">Senaste chattar</h2>
+                  <h2 className="font-semibold text-white">{t('latestChats')}</h2>
                 </div>
                 <div className="divide-y divide-white/5">
                   {chats.length === 0 ? (
-                    <p className="px-4 py-8 text-center text-white/50">Inga chattar än</p>
+                    <p className="px-4 py-8 text-center text-white/50">{t('noChatsYet')}</p>
                   ) : (
                     chats.map((chat) => (
                       <div
@@ -363,7 +365,7 @@ function AdminPage({ onBack }: AdminPageProps) {
                             <div className="flex items-center gap-2">
                               <p className="font-medium text-white truncate">{chat.title}</p>
                               <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60 whitespace-nowrap">
-                                {getAnimalName(chat.user_id)}
+                                {getAnimalName(chat.user_id, t('anonymous'))}
                               </span>
                             </div>
                             {chat.first_message && (
@@ -374,7 +376,7 @@ function AdminPage({ onBack }: AdminPageProps) {
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="text-sm text-white/60">{formatRelativeTime(chat.updated_at)}</p>
-                            <p className="text-xs text-white/40">{chat.message_count} meddelanden</p>
+                            <p className="text-xs text-white/40">{chat.message_count} {t('messages')}</p>
                           </div>
                         </div>
                       </div>
@@ -388,7 +390,7 @@ function AdminPage({ onBack }: AdminPageProps) {
               {/* Prompts editor */}
               {prompts.length === 0 ? (
                 <div className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 p-8 text-center">
-                  <p className="text-white/50">Inga prompts hittades. Starta om servern för att skapa standardprompts.</p>
+                  <p className="text-white/50">{t('noPromptsFound')}</p>
                 </div>
               ) : (
                 prompts.map((prompt) => (
@@ -405,7 +407,7 @@ function AdminPage({ onBack }: AdminPageProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         {promptSuccess === prompt.key && (
-                          <span className="text-sm text-green-400">Sparat!</span>
+                          <span className="text-sm text-green-400">{t('saved')}</span>
                         )}
                         <button
                           onClick={() => savePrompt(prompt.key)}
@@ -419,10 +421,10 @@ function AdminPage({ onBack }: AdminPageProps) {
                           {savingPrompt === prompt.key ? (
                             <span className="flex items-center gap-2">
                               <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                              Sparar...
+                              {t('saving')}
                             </span>
                           ) : (
-                            'Spara ändringar'
+                            t('saveChanges')
                           )}
                         </button>
                       </div>
@@ -435,10 +437,10 @@ function AdminPage({ onBack }: AdminPageProps) {
                           [prompt.key]: e.target.value
                         })}
                         className="w-full h-64 bg-black/50 border border-white/10 rounded-lg p-4 text-white text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-white/20"
-                        placeholder="Skriv prompt här..."
+                        placeholder={t('writePromptHere')}
                       />
                       <p className="text-xs text-white/40 mt-2">
-                        Senast uppdaterad: {formatDate(prompt.updated_at)}
+                        {t('lastUpdated')}: {formatDate(prompt.updated_at)}
                       </p>
                     </div>
                   </div>
@@ -483,7 +485,7 @@ function AdminPage({ onBack }: AdminPageProps) {
                     <div className="w-6 h-6 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
                   </div>
                 ) : messages.length === 0 ? (
-                  <p className="text-center text-white/50 py-8">Inga meddelanden</p>
+                  <p className="text-center text-white/50 py-8">{t('noMessages')}</p>
                 ) : (
                   messages.map((msg) => (
                     <div
@@ -498,7 +500,7 @@ function AdminPage({ onBack }: AdminPageProps) {
                         <span className={`text-xs font-medium ${
                           msg.role === 'user' ? 'text-blue-400' : 'text-white/60'
                         }`}>
-                          {msg.role === 'user' ? 'Användare' : 'Magister T'}
+                          {msg.role === 'user' ? t('user') : t('magisterT')}
                         </span>
                         <span className="text-xs text-white/40">
                           {formatDate(msg.created_at)}

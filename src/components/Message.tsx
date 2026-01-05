@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Message } from '../hooks/useChat'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -9,7 +10,7 @@ interface MessageBubbleProps {
 }
 
 // Copy button component for code blocks
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, title }: { text: string; title: string }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -22,7 +23,7 @@ function CopyButton({ text }: { text: string }) {
     <button
       onClick={handleCopy}
       className="absolute top-2 right-2 p-1.5 rounded-md bg-gray-700/50 hover:bg-gray-600/70 text-gray-300 hover:text-white transition-colors"
-      title="Kopiera kod"
+      title={title}
     >
       {copied ? (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-magister-400">
@@ -38,7 +39,7 @@ function CopyButton({ text }: { text: string }) {
 }
 
 // Code block wrapper with copy button
-function CodeBlock({ children }: { children: React.ReactNode }) {
+function CodeBlock({ children, copyTitle }: { children: React.ReactNode; copyTitle: string }) {
   // Extract text content from children
   const getTextContent = (node: React.ReactNode): string => {
     if (typeof node === 'string') return node
@@ -53,7 +54,7 @@ function CodeBlock({ children }: { children: React.ReactNode }) {
 
   return (
     <pre className="relative bg-gray-800/90 backdrop-blur-sm rounded-lg my-3 p-4 overflow-x-auto shadow-md group">
-      <CopyButton text={codeText} />
+      <CopyButton text={codeText} title={copyTitle} />
       {children}
     </pre>
   )
@@ -61,6 +62,7 @@ function CodeBlock({ children }: { children: React.ReactNode }) {
 
 function MessageBubble({ message }: MessageBubbleProps) {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const isAssistant = message.role === 'assistant'
   const isStreaming = message.isStreaming
   const [showMenu, setShowMenu] = useState(false)
@@ -126,7 +128,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
                             </svg>
                           )}
-                          {copied ? 'Kopierat!' : 'Kopiera text'}
+                          {copied ? t('copied') : t('copyText')}
                         </button>
                       </div>
                     </>
@@ -139,7 +141,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
               {user?.profile_image ? (
                 <img
                   src={user.profile_image}
-                  alt={user.name || 'Användare'}
+                  alt={user.name || t('user')}
                   className="w-5 h-5 rounded-md object-cover"
                   referrerPolicy="no-referrer"
                 />
@@ -150,7 +152,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
                   </svg>
                 </div>
               )}
-              <span className="text-xs font-medium text-gray-700">Du</span>
+              <span className="text-xs font-medium text-gray-700">{t('you')}</span>
             </>
           )}
         </div>
@@ -194,7 +196,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
                       </code>
                     )
                   },
-                  pre: ({ children }) => <CodeBlock>{children}</CodeBlock>,
+                  pre: ({ children }) => <CodeBlock copyTitle={t('copyCode')}>{children}</CodeBlock>,
                   // Strong and emphasis
                   strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
                   em: ({ children }) => <em className="italic">{children}</em>,
@@ -219,7 +221,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
               )}
               {isStreaming && !message.content && (
                 <span className="text-gray-600 flex items-center gap-1">
-                  <span>Magister T skriver</span>
+                  <span>{t('magisterTWriting')}</span>
                   <span className="animate-pulse">...</span>
                 </span>
               )}
