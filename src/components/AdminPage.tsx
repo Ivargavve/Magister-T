@@ -261,8 +261,14 @@ function AdminPage({ onBack }: AdminPageProps) {
 
         {/* Chat detail modal */}
         {selectedChat && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-black/80 backdrop-blur-md rounded-xl border border-white/10 w-full max-w-2xl max-h-[80vh] flex flex-col">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedChat(null)}
+          >
+            <div
+              className="bg-black/80 backdrop-blur-md rounded-xl border border-white/10 w-full max-w-2xl max-h-[80vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Modal header */}
               <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
                 <div>
