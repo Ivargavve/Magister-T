@@ -198,7 +198,7 @@ function AdminPage({ onBack }: AdminPageProps) {
           {stats && (
             <div className="flex items-center gap-5 ml-auto text-sm">
               <div className="flex items-center gap-1.5">
-                <span className="text-white/50">Idag:</span>
+                <span className="text-white/50">24h:</span>
                 <span className="font-semibold text-green-400">{stats.chatsToday ?? 0}</span>
                 <span className="text-white/40">chattar</span>
                 <span className="text-white/30">•</span>

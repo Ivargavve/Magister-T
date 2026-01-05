@@ -91,8 +91,8 @@ router.get('/stats', requireAuth, requireAdmin, async (req: Request, res: Respon
       query<{ count: string }>('SELECT COUNT(*) as count FROM users'),
       query<{ count: string }>('SELECT COUNT(*) as count FROM chats'),
       query<{ count: string }>('SELECT COUNT(*) as count FROM messages'),
-      query<{ count: string }>('SELECT COUNT(*) as count FROM messages WHERE DATE(created_at) = CURRENT_DATE'),
-      query<{ count: string }>('SELECT COUNT(*) as count FROM chats WHERE DATE(created_at) = CURRENT_DATE'),
+      query<{ count: string }>(`SELECT COUNT(*) as count FROM messages WHERE created_at >= NOW() - INTERVAL '24 hours'`),
+      query<{ count: string }>(`SELECT COUNT(*) as count FROM chats WHERE created_at >= NOW() - INTERVAL '24 hours'`),
       query<{ avg: string }>('SELECT ROUND(AVG(msg_count)::numeric, 1) as avg FROM (SELECT COUNT(*) as msg_count FROM messages GROUP BY chat_id) sub')
     ])
 
