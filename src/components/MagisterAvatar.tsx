@@ -164,8 +164,8 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
     }
 
     const scheduleBlink = () => {
-      // Random interval between 6-12 seconds
-      const interval = Math.random() * 6000 + 6000
+      // Random interval between 10-15 seconds
+      const interval = Math.random() * 5000 + 10000
 
       blinkTimeoutRef.current = setTimeout(() => {
         // Check cooldown - don't blink if we blinked too recently
