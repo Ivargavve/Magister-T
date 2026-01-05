@@ -5,7 +5,7 @@ import Input from './Input'
 import MagisterPortrait from './MagisterAvatar'
 import chatBackgroundPaper from '../assets/chatbackgroundpaper.png'
 import topOfChatPlank from '../assets/topofchatplank.png'
-import classroomBackground from '../assets/classnew.png'
+import classroomBackground from '../assets/classlighter.jpg'
 import chalkboard from '../assets/chalkboard.png'
 
 interface ChatProps {
@@ -61,10 +61,14 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
   }, [showWink, isStreaming, isLoading])
 
   return (
-    <div
-      className="flex-1 flex overflow-hidden bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: `url(${classroomBackground})` }}
-    >
+    <div className="flex-1 flex overflow-hidden relative">
+      {/* Blurred background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat blur"
+        style={{ backgroundImage: `url(${classroomBackground})` }}
+      />
+      {/* Content container */}
+      <div className="relative flex-1 flex overflow-hidden">
       {/* Main chat area */}
       <div className="flex-1 flex flex-col overflow-hidden lg:mr-[250px] xl:mr-[300px] 2xl:mr-[350px]">
         {/* Wood plank header - only show when there are messages */}
@@ -162,6 +166,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
             isResponding={isStreaming || hasStreamingMessage}
             showWink={showWink}
           />
+      </div>
       </div>
     </div>
   )

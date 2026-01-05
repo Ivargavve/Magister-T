@@ -7,7 +7,7 @@ import { useChat, Message } from './hooks/useChat'
 import { useChats } from './hooks/useChats'
 import { useGuestChats } from './hooks/useGuestChats'
 import { useAuth } from './contexts/AuthContext'
-import libraryBackground from './assets/librarybackground.png'
+import libraryBackground from './assets/classlighter.jpg'
 
 // Re-export Message type for backward compatibility
 export type { Message } from './hooks/useChat'
