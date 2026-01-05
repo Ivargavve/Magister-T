@@ -27,12 +27,13 @@ router.get('/check', requireAuth, (req: Request, res: Response) => {
   res.json({ isAdmin })
 })
 
-// Get all chats with message counts (anonymous - no user info)
+// Get all chats with message counts (anonymous - user_id for animal mapping)
 router.get('/chats', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const chats = await query<{
       id: number
       title: string
+      user_id: number
       message_count: number
       created_at: string
       updated_at: string
@@ -41,6 +42,7 @@ router.get('/chats', requireAuth, requireAdmin, async (req: Request, res: Respon
       `SELECT
         c.id,
         c.title,
+        c.user_id,
         (SELECT COUNT(*) FROM messages WHERE chat_id = c.id) as message_count,
         c.created_at,
         c.updated_at,

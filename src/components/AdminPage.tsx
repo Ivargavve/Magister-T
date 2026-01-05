@@ -5,10 +5,23 @@ import classroomBackground from '../assets/classlighter.jpg'
 interface ChatItem {
   id: number
   title: string
+  user_id: number
   message_count: number
   created_at: string
   updated_at: string
   first_message: string | null
+}
+
+// Anonymous animal names for users
+const ANIMALS = [
+  'Bäver', 'Räv', 'Uggla', 'Björn', 'Varg', 'Älg', 'Hare', 'Grävling',
+  'Utter', 'Lo', 'Ekorre', 'Igelkott', 'Fisk', 'Örn', 'Svan', 'Korp',
+  'Säl', 'Rådjur', 'Vildsvin', 'Mård', 'Hermelin', 'Järv', 'Lemmel', 'Ren'
+]
+
+const getAnimalName = (userId: number): string => {
+  const index = userId % ANIMALS.length
+  return `Anonym ${ANIMALS[index]}`
 }
 
 interface Message {
@@ -135,8 +148,8 @@ function AdminPage({ onBack }: AdminPageProps) {
 
       {/* Content */}
       <div className="relative flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="bg-black/70 backdrop-blur-sm border-b border-white/10 px-6 py-4 flex items-center gap-4">
+        {/* Header with stats */}
+        <div className="bg-black/70 backdrop-blur-sm border-b border-white/10 px-6 py-3 flex items-center gap-6">
           <button
             onClick={onBack}
             className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 transition-colors"
@@ -145,7 +158,25 @@ function AdminPage({ onBack }: AdminPageProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
           </button>
-          <h1 className="text-xl font-semibold text-white">Admin Panel</h1>
+          <h1 className="text-lg font-semibold text-white">Admin</h1>
+
+          {/* Stats in header */}
+          {stats && (
+            <div className="flex items-center gap-6 ml-auto text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-white/50">Användare</span>
+                <span className="font-semibold text-white">{stats.totalUsers}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-white/50">Chattar</span>
+                <span className="font-semibold text-white">{stats.totalChats}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-white/50">Meddelanden</span>
+                <span className="font-semibold text-white">{stats.totalMessages}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Main content */}
@@ -160,24 +191,6 @@ function AdminPage({ onBack }: AdminPageProps) {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Stats cards */}
-              {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <p className="text-white/60 text-sm">Totalt användare</p>
-                    <p className="text-3xl font-bold text-white">{stats.totalUsers}</p>
-                  </div>
-                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <p className="text-white/60 text-sm">Totalt chattar</p>
-                    <p className="text-3xl font-bold text-white">{stats.totalChats}</p>
-                  </div>
-                  <div className="bg-black/50 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <p className="text-white/60 text-sm">Totalt meddelanden</p>
-                    <p className="text-3xl font-bold text-white">{stats.totalMessages}</p>
-                  </div>
-                </div>
-              )}
-
               {/* Chats list */}
               <div className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/10">
@@ -195,7 +208,12 @@ function AdminPage({ onBack }: AdminPageProps) {
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-white truncate">{chat.title}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-white truncate">{chat.title}</p>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60 whitespace-nowrap">
+                                {getAnimalName(chat.user_id)}
+                              </span>
+                            </div>
                             {chat.first_message && (
                               <p className="text-sm text-white/50 truncate mt-1">
                                 "{chat.first_message}"
