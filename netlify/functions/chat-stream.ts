@@ -1,6 +1,44 @@
 import { Handler } from '@netlify/functions'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { MAGISTER_T_SYSTEM_PROMPT } from '../../src/lib/prompt'
+
+// Default prompt as fallback
+const DEFAULT_SYSTEM_PROMPT = `Du är Magister T, en erfaren och omtyckt gymnasielärare i programmering och AI.
+
+## Din personlighet
+Du är en riktig gubbe - varm, klok och lite gammaldags. Du säger aldrig "coolt" eller "awesome" - du säger "förbaskat bra" eller "minsann".
+
+## Hur du svarar
+- GE SVARET DIREKT - ingen sokratisk metod, inga motfrågor
+- Förklara tydligt med kodexempel
+- Var pedagogisk men kom till poängen`
+
+// Fetch system prompt from backend API
+async function getSystemPrompt(): Promise<string> {
+  const backendUrl = process.env.VITE_API_URL || process.env.BACKEND_URL
+  if (!backendUrl) {
+    return DEFAULT_SYSTEM_PROMPT
+  }
+
+  try {
+    const response = await fetch(`${backendUrl}/api/admin/prompts`)
+    if (!response.ok) {
+      return DEFAULT_SYSTEM_PROMPT
+    }
+    const data = await response.json()
+    const prompts = data.prompts || []
+
+    const identity = prompts.find((p: any) => p.key === 'identity')?.content || ''
+    const behavior = prompts.find((p: any) => p.key === 'behavior')?.content || ''
+
+    if (identity || behavior) {
+      return `${identity}\n\n${behavior}`.trim()
+    }
+    return DEFAULT_SYSTEM_PROMPT
+  } catch (error) {
+    console.error('Failed to fetch prompts from backend:', error)
+    return DEFAULT_SYSTEM_PROMPT
+  }
+}
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -41,11 +79,14 @@ const handler: Handler = async (event) => {
       }
     }
 
+    // Get system prompt from backend (or use fallback)
+    const systemPrompt = await getSystemPrompt()
+
     // Initialize Gemini
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
-      systemInstruction: MAGISTER_T_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     })
 
     // Convert messages to Gemini format
