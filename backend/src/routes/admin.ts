@@ -98,12 +98,12 @@ router.get('/stats', requireAuth, requireAdmin, async (req: Request, res: Respon
 
     res.json({
       stats: {
-        totalUsers: parseInt(userCount[0]?.count || '0'),
-        totalChats: parseInt(chatCount[0]?.count || '0'),
-        totalMessages: parseInt(messageCount[0]?.count || '0'),
-        messagesToday: parseInt(messagesToday[0]?.count || '0'),
-        chatsToday: parseInt(chatsToday[0]?.count || '0'),
-        avgMessagesPerChat: parseFloat(avgMessagesPerChat[0]?.avg || '0')
+        totalUsers: parseInt(userCount[0]?.count ?? '0', 10),
+        totalChats: parseInt(chatCount[0]?.count ?? '0', 10),
+        totalMessages: parseInt(messageCount[0]?.count ?? '0', 10),
+        messagesToday: parseInt(messagesToday[0]?.count ?? '0', 10),
+        chatsToday: parseInt(chatsToday[0]?.count ?? '0', 10),
+        avgMessagesPerChat: parseFloat(avgMessagesPerChat[0]?.avg ?? '0') || 0
       }
     })
   } catch (error) {

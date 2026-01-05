@@ -199,22 +199,22 @@ function AdminPage({ onBack }: AdminPageProps) {
             <div className="flex items-center gap-5 ml-auto text-sm">
               <div className="flex items-center gap-1.5">
                 <span className="text-white/50">Idag:</span>
-                <span className="font-semibold text-green-400">{stats.chatsToday}</span>
+                <span className="font-semibold text-green-400">{stats.chatsToday ?? 0}</span>
                 <span className="text-white/40">chattar</span>
                 <span className="text-white/30">•</span>
-                <span className="font-semibold text-green-400">{stats.messagesToday}</span>
+                <span className="font-semibold text-green-400">{stats.messagesToday ?? 0}</span>
                 <span className="text-white/40">msg</span>
               </div>
               <div className="text-white/30">|</div>
               <div className="flex items-center gap-1.5">
                 <span className="text-white/50">Totalt:</span>
-                <span className="font-semibold text-white">{stats.totalUsers}</span>
+                <span className="font-semibold text-white">{stats.totalUsers ?? 0}</span>
                 <span className="text-white/40">användare</span>
                 <span className="text-white/30">•</span>
-                <span className="font-semibold text-white">{stats.totalChats}</span>
+                <span className="font-semibold text-white">{stats.totalChats ?? 0}</span>
                 <span className="text-white/40">chattar</span>
                 <span className="text-white/30">•</span>
-                <span className="font-semibold text-white">{stats.avgMessagesPerChat}</span>
+                <span className="font-semibold text-white">{stats.avgMessagesPerChat ?? 0}</span>
                 <span className="text-white/40">msg/chatt</span>
               </div>
               <div className="text-white/30">|</div>
