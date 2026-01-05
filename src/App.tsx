@@ -327,8 +327,14 @@ function App() {
 
       {/* Login Modal */}
       {showLogin && !isAuthenticated && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay animate-fade-in">
-          <div className="relative max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center modal-overlay animate-fade-in"
+          onClick={() => setShowLogin(false)}
+        >
+          <div
+            className="relative max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setShowLogin(false)}
               className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-warm-900/80 text-parchment-200 hover:text-parchment-100 hover:bg-warm-800 transition-colors"
