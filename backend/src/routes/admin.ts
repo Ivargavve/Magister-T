@@ -87,21 +87,13 @@ router.get('/chats/:chatId/messages', requireAuth, requireAdmin, async (req: Req
 // Get admin stats
 router.get('/stats', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
-    const [userCount, chatCount, messageCount, recentActivity] = await Promise.all([
+    const [userCount, chatCount, messageCount, messagesToday, chatsToday, avgMessagesPerChat] = await Promise.all([
       query<{ count: string }>('SELECT COUNT(*) as count FROM users'),
       query<{ count: string }>('SELECT COUNT(*) as count FROM chats'),
       query<{ count: string }>('SELECT COUNT(*) as count FROM messages'),
-      query<{ date: string; chats: string; messages: string }>(
-        `SELECT
-          DATE(c.created_at) as date,
-          COUNT(DISTINCT c.id) as chats,
-          COUNT(m.id) as messages
-        FROM chats c
-        LEFT JOIN messages m ON c.id = m.chat_id
-        WHERE c.created_at > NOW() - INTERVAL '7 days'
-        GROUP BY DATE(c.created_at)
-        ORDER BY date DESC`
-      )
+      query<{ count: string }>('SELECT COUNT(*) as count FROM messages WHERE DATE(created_at) = CURRENT_DATE'),
+      query<{ count: string }>('SELECT COUNT(*) as count FROM chats WHERE DATE(created_at) = CURRENT_DATE'),
+      query<{ avg: string }>('SELECT ROUND(AVG(msg_count)::numeric, 1) as avg FROM (SELECT COUNT(*) as msg_count FROM messages GROUP BY chat_id) sub')
     ])
 
     res.json({
@@ -109,7 +101,9 @@ router.get('/stats', requireAuth, requireAdmin, async (req: Request, res: Respon
         totalUsers: parseInt(userCount[0]?.count || '0'),
         totalChats: parseInt(chatCount[0]?.count || '0'),
         totalMessages: parseInt(messageCount[0]?.count || '0'),
-        recentActivity
+        messagesToday: parseInt(messagesToday[0]?.count || '0'),
+        chatsToday: parseInt(chatsToday[0]?.count || '0'),
+        avgMessagesPerChat: parseFloat(avgMessagesPerChat[0]?.avg || '0')
       }
     })
   } catch (error) {

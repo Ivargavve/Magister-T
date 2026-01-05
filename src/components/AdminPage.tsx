@@ -60,7 +60,9 @@ interface Stats {
   totalUsers: number
   totalChats: number
   totalMessages: number
-  recentActivity: { date: string; chats: string; messages: string }[]
+  messagesToday: number
+  chatsToday: number
+  avgMessagesPerChat: number
 }
 
 interface AdminPageProps {
@@ -78,6 +80,13 @@ function AdminPage({ onBack }: AdminPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  // Update clock every second
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     loadData()
@@ -187,18 +196,30 @@ function AdminPage({ onBack }: AdminPageProps) {
 
           {/* Stats in header */}
           {stats && (
-            <div className="flex items-center gap-6 ml-auto text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-white/50">Användare</span>
+            <div className="flex items-center gap-5 ml-auto text-sm">
+              <div className="flex items-center gap-1.5">
+                <span className="text-white/50">Idag:</span>
+                <span className="font-semibold text-green-400">{stats.chatsToday}</span>
+                <span className="text-white/40">chattar</span>
+                <span className="text-white/30">•</span>
+                <span className="font-semibold text-green-400">{stats.messagesToday}</span>
+                <span className="text-white/40">msg</span>
+              </div>
+              <div className="text-white/30">|</div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-white/50">Totalt:</span>
                 <span className="font-semibold text-white">{stats.totalUsers}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-white/50">Chattar</span>
+                <span className="text-white/40">användare</span>
+                <span className="text-white/30">•</span>
                 <span className="font-semibold text-white">{stats.totalChats}</span>
+                <span className="text-white/40">chattar</span>
+                <span className="text-white/30">•</span>
+                <span className="font-semibold text-white">{stats.avgMessagesPerChat}</span>
+                <span className="text-white/40">msg/chatt</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-white/50">Meddelanden</span>
-                <span className="font-semibold text-white">{stats.totalMessages}</span>
+              <div className="text-white/30">|</div>
+              <div className="font-mono text-white/70">
+                {currentTime.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </div>
             </div>
           )}
