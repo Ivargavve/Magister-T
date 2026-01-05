@@ -180,12 +180,12 @@ function MagisterPortrait({ isThinking = false, isResponding = false, showWink =
         lastBlinkTimeRef.current = Date.now()
         setIsBlinking(true)
 
-        // End blink after 150ms
+        // End blink after 250ms
         blinkDurationRef.current = setTimeout(() => {
           setIsBlinking(false)
           // Schedule next blink
           scheduleBlink()
-        }, 150)
+        }, 250)
       }, interval)
     }
 
