@@ -12,11 +12,36 @@ interface ChatItem {
   first_message: string | null
 }
 
-// Anonymous animal names for users
+// Anonymous animal names for users (100+ animals)
 const ANIMALS = [
-  'Bäver', 'Räv', 'Uggla', 'Björn', 'Varg', 'Älg', 'Hare', 'Grävling',
-  'Utter', 'Lo', 'Ekorre', 'Igelkott', 'Fisk', 'Örn', 'Svan', 'Korp',
-  'Säl', 'Rådjur', 'Vildsvin', 'Mård', 'Hermelin', 'Järv', 'Lemmel', 'Ren'
+  // Skandinaviska däggdjur
+  'Bäver', 'Räv', 'Björn', 'Varg', 'Älg', 'Hare', 'Grävling', 'Utter',
+  'Lo', 'Ekorre', 'Igelkott', 'Rådjur', 'Vildsvin', 'Mård', 'Hermelin',
+  'Järv', 'Lemmel', 'Ren', 'Mullvad', 'Näbbmus', 'Fladdermöss', 'Bison',
+  // Fåglar
+  'Uggla', 'Örn', 'Svan', 'Korp', 'Falk', 'Hök', 'Trast', 'Sparv',
+  'Kråka', 'Skata', 'Duva', 'Mås', 'Lunnefågel', 'Papegoja', 'Kolibri',
+  'Pelikan', 'Flamingo', 'Påfågel', 'Struts', 'Pingvin', 'Tukan', 'Kondor',
+  // Marina djur
+  'Säl', 'Fisk', 'Val', 'Delfin', 'Haj', 'Bläckfisk', 'Krabba', 'Hummer',
+  'Sjöhäst', 'Manet', 'Sjöstjärna', 'Sköldpadda', 'Ål', 'Lax', 'Torsk',
+  // Exotiska däggdjur
+  'Lejon', 'Tiger', 'Elefant', 'Giraff', 'Zebra', 'Flodhäst', 'Noshörning',
+  'Gepard', 'Leopard', 'Panda', 'Koala', 'Känguru', 'Gorilla', 'Schimpans',
+  'Orangutang', 'Lemur', 'Sengångare', 'Myrslok', 'Bältdjur', 'Tapir',
+  'Okapi', 'Surikat', 'Hyena', 'Schakal', 'Mungo', 'Vombat', 'Tasmansk',
+  // Reptiler och groddjur
+  'Krokodil', 'Alligator', 'Kameleont', 'Gecko', 'Leguan', 'Kobra',
+  'Pytonorm', 'Groda', 'Padda', 'Salamander', 'Ödla', 'Sköldpadda',
+  // Insekter och spindeldjur
+  'Fjäril', 'Bi', 'Humla', 'Skalbagge', 'Trollslända', 'Gräshoppa',
+  'Myra', 'Spindel', 'Skorpion', 'Bönsyrsa',
+  // Husdjur och bondgård
+  'Häst', 'Åsna', 'Kamel', 'Lama', 'Alpacka', 'Get', 'Får', 'Gris',
+  'Ko', 'Tjur', 'Höna', 'Tupp', 'Anka', 'Gås', 'Kalkon',
+  // Fler vilda djur
+  'Varg', 'Coyote', 'Dingo', 'Lodjur', 'Puma', 'Jaguar', 'Ozelot',
+  'Tvättbjörn', 'Skunk', 'Vessla', 'Iller', 'Chinchilla', 'Hamster'
 ]
 
 const getAnimalName = (userId: number): string => {
