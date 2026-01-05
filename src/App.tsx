@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar'
 import Settings from './components/Settings'
 import LoginScreen from './components/LoginScreen'
 import AdminPage from './components/AdminPage'
+import LanguageToggle from './components/LanguageToggle'
 import { useChat, Message } from './hooks/useChat'
 import { useChats } from './hooks/useChats'
 import { useGuestChats } from './hooks/useGuestChats'
@@ -292,6 +293,13 @@ function App() {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Language toggle in top right */}
+        {!showAdmin && (
+          <div className="absolute top-4 right-4 z-30">
+            <LanguageToggle />
+          </div>
+        )}
+
         {/* Mobile menu button */}
         {!showAdmin && (
           <button

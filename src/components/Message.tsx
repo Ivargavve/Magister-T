@@ -55,7 +55,7 @@ function CodeBlock({ children, copyTitle }: { children: React.ReactNode; copyTit
   return (
     <pre className="relative bg-gray-800/90 backdrop-blur-sm rounded-lg my-3 p-4 overflow-x-auto shadow-md group">
       <CopyButton text={codeText} title={copyTitle} />
-      {children}
+      <code className="block text-gray-100 text-sm font-mono whitespace-pre">{codeText}</code>
     </pre>
   )
 }
@@ -180,22 +180,12 @@ function MessageBubble({ message }: MessageBubbleProps) {
                   ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
                   ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
                   li: ({ children }) => <li className="ml-2">{children}</li>,
-                  // Code
-                  code: ({ className, children }) => {
-                    const isInline = !className
-                    if (isInline) {
-                      return (
-                        <code className="bg-amber-900/20 text-amber-900 px-1.5 py-0.5 rounded text-xs font-mono">
-                          {children}
-                        </code>
-                      )
-                    }
-                    return (
-                      <code className="block text-gray-100 text-xs font-mono">
-                        {children}
-                      </code>
-                    )
-                  },
+                  // Code - only handles inline code now (block code handled by pre/CodeBlock)
+                  code: ({ children }) => (
+                    <code className="bg-amber-900/20 text-amber-900 px-1.5 py-0.5 rounded text-sm font-mono">
+                      {children}
+                    </code>
+                  ),
                   pre: ({ children }) => <CodeBlock copyTitle={t('copyCode')}>{children}</CodeBlock>,
                   // Strong and emphasis
                   strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
