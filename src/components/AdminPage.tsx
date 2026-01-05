@@ -183,21 +183,28 @@ function AdminPage({ onBack }: AdminPageProps) {
       {/* Content */}
       <div className="relative flex-1 flex flex-col overflow-hidden">
         {/* Header with stats */}
-        <div className="bg-black/70 backdrop-blur-sm border-b border-white/10 px-6 py-3 flex items-center gap-6">
+        <div className="bg-black/70 backdrop-blur-sm border-b border-white/10 px-3 sm:px-6 py-3 flex items-center gap-3 sm:gap-6">
           <button
             onClick={onBack}
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 transition-colors"
+            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 transition-colors flex-shrink-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
           </button>
-          <h1 className="text-lg font-semibold text-white">Admin</h1>
+          <h1 className="text-lg font-semibold text-white flex-shrink-0">Admin</h1>
 
           {/* Stats in header */}
           {stats && (
-            <div className="flex items-center gap-5 ml-auto text-sm">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2 sm:gap-5 ml-auto text-sm overflow-hidden">
+              {/* Mobile/Tablet: Compact stats */}
+              <div className="flex items-center gap-1.5 xl:hidden">
+                <span className="font-semibold text-green-400">{stats.messagesToday ?? 0}</span>
+                <span className="text-white/40 text-xs">idag</span>
+              </div>
+
+              {/* Desktop: Full stats (xl: 1280px+) */}
+              <div className="hidden xl:flex items-center gap-1.5">
                 <span className="text-white/50">Idag:</span>
                 <span className="font-semibold text-green-400">{stats.chatsToday ?? 0}</span>
                 <span className="text-white/40">chattar</span>
@@ -205,8 +212,8 @@ function AdminPage({ onBack }: AdminPageProps) {
                 <span className="font-semibold text-green-400">{stats.messagesToday ?? 0}</span>
                 <span className="text-white/40">msg</span>
               </div>
-              <div className="text-white/30">|</div>
-              <div className="flex items-center gap-1.5">
+              <div className="hidden xl:block text-white/30">|</div>
+              <div className="hidden xl:flex items-center gap-1.5">
                 <span className="text-white/50">Totalt:</span>
                 <span className="font-semibold text-white">{stats.totalUsers ?? 0}</span>
                 <span className="text-white/40">användare</span>
@@ -217,8 +224,8 @@ function AdminPage({ onBack }: AdminPageProps) {
                 <span className="font-semibold text-white">{stats.avgMessagesPerChat ?? 0}</span>
                 <span className="text-white/40">msg/chatt</span>
               </div>
-              <div className="text-white/30">|</div>
-              <div className="font-mono text-white/70">
+              <div className="hidden sm:block text-white/30">|</div>
+              <div className="font-mono text-white/70 text-xs sm:text-sm flex-shrink-0">
                 {currentTime.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </div>
             </div>
