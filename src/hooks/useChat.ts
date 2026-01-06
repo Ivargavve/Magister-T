@@ -13,6 +13,7 @@ interface UseChatOptions {
   onChatCreated?: (chatId: number | string) => void
   onMessagesUpdated?: (messages: Message[]) => void
   initialMessages?: Message[]
+  language?: string
 }
 
 interface UseChatReturn {
@@ -32,7 +33,7 @@ const API_URL = import.meta.env.VITE_API_URL || ''
  * Supports both authenticated (database) and guest (localStorage) modes.
  */
 export function useChat(options: UseChatOptions = {}): UseChatReturn {
-  const { token, chatId, onChatCreated, onMessagesUpdated, initialMessages = [] } = options
+  const { token, chatId, onChatCreated, onMessagesUpdated, initialMessages = [], language = 'sv' } = options
 
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [isLoading, setIsLoading] = useState(false)
@@ -173,7 +174,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ content: content.trim() }),
+            body: JSON.stringify({ content: content.trim(), language }),
             signal: abortControllerRef.current.signal,
           })
 
@@ -218,7 +219,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ messages: apiMessages }),
+            body: JSON.stringify({ messages: apiMessages, language }),
             signal: abortControllerRef.current.signal,
           })
 
@@ -349,7 +350,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         abortControllerRef.current = null
       }
     },
-    [isLoading, messages, token, onChatCreated]
+    [isLoading, messages, token, onChatCreated, language]
   )
 
   /**

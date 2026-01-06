@@ -9,6 +9,7 @@ import { useChat, Message } from './hooks/useChat'
 import { useChats } from './hooks/useChats'
 import { useGuestChats } from './hooks/useGuestChats'
 import { useAuth } from './contexts/AuthContext'
+import { useLanguage } from './contexts/LanguageContext'
 import libraryBackground from './assets/classlighter.jpg'
 
 // Re-export Message type for backward compatibility
@@ -18,6 +19,7 @@ const API_URL = import.meta.env.VITE_API_URL || ''
 
 function App() {
   const { isAuthenticated, isLoading: authLoading, token } = useAuth()
+  const { language } = useLanguage()
   const [showSettings, setShowSettings] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -98,6 +100,7 @@ function App() {
     onChatCreated: handleChatCreated,
     onMessagesUpdated: handleMessagesUpdated,
     initialMessages,
+    language,
   })
 
   // Wrap sendMessage to create guest chat first if needed

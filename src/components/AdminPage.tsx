@@ -94,6 +94,7 @@ function AdminPage({ onBack }: AdminPageProps) {
   const [error, setError] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [activeTab, setActiveTab] = useState<'chats' | 'prompts'>('chats')
+  const [promptLanguage, setPromptLanguage] = useState<'sv' | 'en'>('sv')
   const [prompts, setPrompts] = useState<SystemPrompt[]>([])
   const [editingPrompts, setEditingPrompts] = useState<Record<string, string>>({})
   const [savingPrompt, setSavingPrompt] = useState<string | null>(null)
@@ -387,13 +388,41 @@ function AdminPage({ onBack }: AdminPageProps) {
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Language sub-tabs */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPromptLanguage('sv')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    promptLanguage === 'sv'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
+                  }`}
+                >
+                  <span className="text-lg">🇸🇪</span>
+                  Svenska
+                </button>
+                <button
+                  onClick={() => setPromptLanguage('en')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    promptLanguage === 'en'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
+                  }`}
+                >
+                  <span className="text-lg">🇬🇧</span>
+                  English
+                </button>
+              </div>
+
               {/* Prompts editor */}
-              {prompts.length === 0 ? (
+              {prompts.filter(p => p.key.endsWith(`_${promptLanguage}`)).length === 0 ? (
                 <div className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 p-8 text-center">
                   <p className="text-white/50">{t('noPromptsFound')}</p>
                 </div>
               ) : (
-                prompts.map((prompt) => (
+                prompts
+                  .filter(p => p.key.endsWith(`_${promptLanguage}`))
+                  .map((prompt) => (
                   <div
                     key={prompt.key}
                     className="bg-black/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden"

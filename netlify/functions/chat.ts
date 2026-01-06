@@ -1,8 +1,8 @@
 import { Handler } from '@netlify/functions'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Default prompt as fallback
-const DEFAULT_SYSTEM_PROMPT = `Du är Magister T, en erfaren och omtyckt gymnasielärare i programmering och AI.
+// Default prompts as fallback
+const DEFAULT_SYSTEM_PROMPT_SV = `Du är Magister T, en erfaren och omtyckt gymnasielärare i programmering och AI.
 
 ## Din personlighet
 Du är en riktig gubbe - varm, klok och lite gammaldags. Du säger aldrig "coolt" eller "awesome" - du säger "förbaskat bra" eller "minsann".
@@ -12,31 +12,44 @@ Du är en riktig gubbe - varm, klok och lite gammaldags. Du säger aldrig "coolt
 - Förklara tydligt med kodexempel
 - Var pedagogisk men kom till poängen`
 
+const DEFAULT_SYSTEM_PROMPT_EN = `You are Magister T, an experienced and beloved high school teacher in programming and AI.
+
+## Your personality
+You're a real old-timer - warm, wise, and a bit old-fashioned. You never say "cool" or "awesome" - you say "splendid" or "jolly good".
+
+## How you respond
+- GIVE THE ANSWER DIRECTLY - no Socratic method, no counter-questions
+- Explain clearly with code examples
+- Be pedagogical but get to the point`
+
 // Fetch system prompt from backend API
-async function getSystemPrompt(): Promise<string> {
+async function getSystemPrompt(language: string = 'sv'): Promise<string> {
+  const lang = language === 'en' ? 'en' : 'sv'
+  const defaultPrompt = lang === 'en' ? DEFAULT_SYSTEM_PROMPT_EN : DEFAULT_SYSTEM_PROMPT_SV
+
   const backendUrl = process.env.VITE_API_URL || process.env.BACKEND_URL
   if (!backendUrl) {
-    return DEFAULT_SYSTEM_PROMPT
+    return defaultPrompt
   }
 
   try {
     const response = await fetch(`${backendUrl}/api/admin/prompts`)
     if (!response.ok) {
-      return DEFAULT_SYSTEM_PROMPT
+      return defaultPrompt
     }
     const data = await response.json()
     const prompts = data.prompts || []
 
-    const identity = prompts.find((p: any) => p.key === 'identity')?.content || ''
-    const behavior = prompts.find((p: any) => p.key === 'behavior')?.content || ''
+    const identity = prompts.find((p: any) => p.key === `identity_${lang}`)?.content || ''
+    const behavior = prompts.find((p: any) => p.key === `behavior_${lang}`)?.content || ''
 
     if (identity || behavior) {
       return `${identity}\n\n${behavior}`.trim()
     }
-    return DEFAULT_SYSTEM_PROMPT
+    return defaultPrompt
   } catch (error) {
     console.error('Failed to fetch prompts from backend:', error)
-    return DEFAULT_SYSTEM_PROMPT
+    return defaultPrompt
   }
 }
 
@@ -47,6 +60,7 @@ interface ChatMessage {
 
 interface RequestBody {
   messages: ChatMessage[]
+  language?: string
 }
 
 const handler: Handler = async (event) => {
@@ -70,7 +84,7 @@ const handler: Handler = async (event) => {
 
   try {
     const body: RequestBody = JSON.parse(event.body || '{}')
-    const { messages } = body
+    const { messages, language = 'sv' } = body
 
     if (!messages || !Array.isArray(messages)) {
       return {
@@ -80,7 +94,7 @@ const handler: Handler = async (event) => {
     }
 
     // Get system prompt from backend (or use fallback)
-    const systemPrompt = await getSystemPrompt()
+    const systemPrompt = await getSystemPrompt(language)
 
     // Initiera Gemini
     const genAI = new GoogleGenerativeAI(apiKey)

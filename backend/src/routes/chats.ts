@@ -158,7 +158,7 @@ router.post('/:id/messages', requireAuth, async (req: Request, res: Response): P
   try {
     const userId = req.userId!;
     const chatId = parseInt(req.params.id, 10);
-    const { content, role = 'user' } = req.body;
+    const { content, role = 'user', language = 'sv' } = req.body;
 
     if (isNaN(chatId)) {
       res.status(400).json({ error: 'Invalid chat ID' });
@@ -184,7 +184,7 @@ router.post('/:id/messages', requireAuth, async (req: Request, res: Response): P
     const messages = await getMessagesForChat(chatId);
 
     // Generate AI response
-    const systemPrompt = await getSystemPrompt();
+    const systemPrompt = await getSystemPrompt(language);
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: systemPrompt,
@@ -212,9 +212,10 @@ router.post('/:id/messages', requireAuth, async (req: Request, res: Response): P
       // Generate a short title based on the first message
       const titleModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       try {
-        const titleResult = await titleModel.generateContent(
-          `Skapa en kort titel (max 5 ord, på svenska) för en konversation som börjar med denna fråga: "${content}". Svara ENDAST med titeln, inget annat.`
-        );
+        const titlePrompt = language === 'en'
+          ? `Create a short title (max 5 words, in English) for a conversation starting with this question: "${content}". Reply ONLY with the title, nothing else.`
+          : `Skapa en kort titel (max 5 ord, på svenska) för en konversation som börjar med denna fråga: "${content}". Svara ENDAST med titeln, inget annat.`;
+        const titleResult = await titleModel.generateContent(titlePrompt);
         const newTitle = titleResult.response.text().trim().slice(0, 100);
         await updateChatTitle(chatId, userId, newTitle);
       } catch (titleError) {
@@ -248,7 +249,7 @@ router.post('/:id/messages/stream', requireAuth, async (req: Request, res: Respo
   try {
     const userId = req.userId!;
     const chatId = parseInt(req.params.id, 10);
-    const { content } = req.body;
+    const { content, language = 'sv' } = req.body;
 
     if (isNaN(chatId)) {
       res.status(400).json({ error: 'Invalid chat ID' });
@@ -280,7 +281,7 @@ router.post('/:id/messages/stream', requireAuth, async (req: Request, res: Respo
     res.flushHeaders();
 
     // Generate AI response with streaming
-    const systemPrompt = await getSystemPrompt();
+    const systemPrompt = await getSystemPrompt(language);
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: systemPrompt,
@@ -323,9 +324,10 @@ router.post('/:id/messages/stream', requireAuth, async (req: Request, res: Respo
     if (messages.length <= 1 && chat.title === 'Ny konversation') {
       const titleModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       try {
-        const titleResult = await titleModel.generateContent(
-          `Skapa en kort titel (max 5 ord, på svenska) för en konversation som börjar med denna fråga: "${content}". Svara ENDAST med titeln, inget annat.`
-        );
+        const titlePrompt = language === 'en'
+          ? `Create a short title (max 5 words, in English) for a conversation starting with this question: "${content}". Reply ONLY with the title, nothing else.`
+          : `Skapa en kort titel (max 5 ord, på svenska) för en konversation som börjar med denna fråga: "${content}". Svara ENDAST med titeln, inget annat.`;
+        const titleResult = await titleModel.generateContent(titlePrompt);
         const newTitle = titleResult.response.text().trim().slice(0, 100);
         await updateChatTitle(chatId, userId, newTitle);
         res.write(`data: ${JSON.stringify({ type: 'title', title: newTitle })}\n\n`);
@@ -345,14 +347,14 @@ router.post('/:id/messages/stream', requireAuth, async (req: Request, res: Respo
 // POST /api/chat - Anonymous chat (no persistence, for unauthenticated users)
 router.post('/anonymous', optionalAuth, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { messages } = req.body;
+    const { messages, language = 'sv' } = req.body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       res.status(400).json({ error: 'Messages array is required' });
       return;
     }
 
-    const systemPrompt = await getSystemPrompt();
+    const systemPrompt = await getSystemPrompt(language);
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       systemInstruction: systemPrompt,
