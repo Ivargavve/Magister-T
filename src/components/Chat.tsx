@@ -74,7 +74,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
       {/* Content container */}
       <div className="relative flex-1 flex overflow-hidden">
       {/* Main chat area */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:mr-[250px] xl:mr-[300px] 2xl:mr-[350px] max-w-5xl">
+      <div className="flex-1 flex flex-col overflow-hidden lg:mr-[250px] xl:mr-[300px] 2xl:mr-[350px] max-w-5xl mx-auto">
         {/* Wood plank header - only show when there are messages */}
         {messages.length > 0 && (
           <div
