@@ -84,7 +84,7 @@ app.post('/api/chat', async (req: Request, res: Response) => {
   try {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
 
-    const { messages } = req.body;
+    const { messages, language = 'sv' } = req.body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       res.status(400).json({ error: 'Messages array is required' });
@@ -93,9 +93,10 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 
     const apiKey = process.env.GEMINI_API_KEY || '';
     console.log('Using Gemini API key (first 10 chars):', apiKey.substring(0, 10) + '...');
+    console.log('Language:', language);
 
-    // Get system prompt from database
-    const systemPrompt = await getSystemPrompt();
+    // Get system prompt from database based on language
+    const systemPrompt = await getSystemPrompt(language);
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
