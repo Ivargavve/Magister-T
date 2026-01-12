@@ -73,8 +73,10 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
       />
       {/* Content container */}
       <div className="relative flex-1 flex overflow-hidden">
-      {/* Main chat area */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:mr-[250px] xl:mr-[300px] 2xl:mr-[350px] max-w-5xl mx-auto">
+      {/* Main chat area wrapper - handles portrait spacing and centering */}
+      <div className="flex-1 flex justify-center lg:pr-[250px] xl:pr-[300px] 2xl:pr-[350px]">
+      {/* Centered chat content */}
+      <div className="w-full max-w-5xl flex flex-col overflow-hidden">
         {/* Wood plank header - only show when there are messages */}
         {messages.length > 0 && (
           <div
@@ -163,6 +165,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
           isStreaming={isStreaming}
           onStopStreaming={onStopStreaming}
         />
+      </div>
       </div>
 
       {/* Right side: Magister T Portrait - absolutely positioned with responsive scaling */}
