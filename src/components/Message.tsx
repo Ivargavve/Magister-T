@@ -161,7 +161,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
         <div
           className={`text-base leading-relaxed font-serif ${
             isAssistant
-              ? 'text-gray-900 markdown-content'
+              ? 'text-gray-900 markdown-content overflow-hidden'
               : 'bg-magister-600 text-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-md whitespace-pre-wrap'
           }`}
         >
