@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
-import chatHistoryPaper from '../assets/chathistorypaper.png'
-import sidebarBackground from '../assets/sidebarbackground.png'
+import chatHistoryPaper from '../assets/chathistorypaper.webp'
+import sidebarBackground from '../assets/sidebarbackground.webp'
 
 interface ChatItem {
   id: number | string

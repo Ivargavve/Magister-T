@@ -10,7 +10,7 @@ import { useChats } from './hooks/useChats'
 import { useGuestChats } from './hooks/useGuestChats'
 import { useAuth } from './contexts/AuthContext'
 import { useLanguage } from './contexts/LanguageContext'
-import libraryBackground from './assets/classlighter.jpg'
+import libraryBackground from './assets/classlighter.webp'
 
 // Re-export Message type for backward compatibility
 export type { Message } from './hooks/useChat'

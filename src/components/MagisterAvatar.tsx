@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import original1 from '../assets/magister-t/original12_new.png'
-import original2 from '../assets/magister-t/original22_new.png'
-import reading from '../assets/magister-t/read2_new.png'
-import ideaBubble from '../assets/magister-t/idea2_new.png'
-import wink from '../assets/magister-t/wink2_new.png'
-import blink from '../assets/magister-t/blink2_new.png'
-import pelare from '../assets/magister-t/pelare.png'
+import original1 from '../assets/magister-t/original12_new.webp'
+import original2 from '../assets/magister-t/original22_new.webp'
+import reading from '../assets/magister-t/read2_new.webp'
+import ideaBubble from '../assets/magister-t/idea2_new.webp'
+import wink from '../assets/magister-t/wink2_new.webp'
+import blink from '../assets/magister-t/blink2_new.webp'
+import pelare from '../assets/magister-t/pelare.webp'
 
 type AvatarState = 'idle' | 'reading' | 'idea' | 'wink'
 
@@ -18,13 +18,6 @@ interface MagisterPortraitProps {
 // Minimum display times in ms
 const MIN_READING_TIME = 1000
 const MIN_IDEA_TIME = 1500
-
-// Preload all images on module load
-const preloadImages = [original1, original2, reading, ideaBubble, wink, blink, pelare]
-preloadImages.forEach(src => {
-  const img = new Image()
-  img.src = src
-})
 
 // Minimum time between blinks in ms
 const MIN_BLINK_COOLDOWN = 3000

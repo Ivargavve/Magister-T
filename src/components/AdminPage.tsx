@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
-import classroomBackground from '../assets/classlighter.jpg'
+import classroomBackground from '../assets/classlighter.webp'
 
 interface ChatItem {
   id: number

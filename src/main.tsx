@@ -6,6 +6,10 @@ import { LanguageProvider } from './contexts/LanguageContext'
 import App from './App.tsx'
 import './index.css'
 
+// Preload critical images as early as possible
+import { preloadImages } from './utils/preloadImages'
+preloadImages()
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
