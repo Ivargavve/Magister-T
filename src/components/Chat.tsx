@@ -66,9 +66,9 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
 
   return (
     <div className="flex-1 flex overflow-hidden relative">
-      {/* Blurred background */}
+      {/* Blurred background - extended beyond container to prevent blur edge artifacts */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat blur"
+        className="absolute -inset-4 bg-cover bg-center bg-no-repeat blur"
         style={{ backgroundImage: `url(${classroomBackground})` }}
       />
       {/* Content container */}
@@ -91,7 +91,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
 
         {/* Chat content area with parchment background */}
         <div
-          className={`flex-1 overflow-y-auto ${messages.length > 0 ? 'bg-no-repeat mx-0 md:mx-4 -mb-10 relative z-0' : ''}`}
+          className={`flex-1 ${messages.length > 0 ? 'overflow-y-auto bg-no-repeat mx-0 md:mx-4 -mb-10 relative z-0' : 'overflow-hidden'}`}
           style={messages.length > 0 ? {
             backgroundImage: `url(${chatBackgroundPaper})`,
             backgroundSize: '100% calc(100% + 40px)',
