@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:16
+    container_name: magistert-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: magistert
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: magistert
+    volumes:
+      - magistert-pgdata:/var/lib/postgresql/data
+    networks:
+      - magistert-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U magistert -d magistert"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ghcr.io/ivargavve/magister-t/backend:latest
+    container_name: magistert-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://magistert:${DB_PASSWORD}@db:5432/magistert
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - magistert-internal
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.magistert-api.rule=Host(`magistert.gavelinivar.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.magistert-api.entrypoints=websecure"
+      - "traefik.http.routers.magistert-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.magistert-api.loadbalancer.server.port=3001"
+      - "traefik.docker.network=web"
+
+  frontend:
+    image: ghcr.io/ivargavve/magister-t/frontend:latest
+    container_name: magistert-frontend
+    restart: unless-stopped
+    networks:
+      - magistert-internal
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.magistert-web.rule=Host(`magistert.gavelinivar.com`)"
+      - "traefik.http.routers.magistert-web.entrypoints=websecure"
+      - "traefik.http.routers.magistert-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.magistert-web.loadbalancer.server.port=80"
+      - "traefik.docker.network=web"
+
+networks:
+  magistert-internal:
+    driver: bridge
+  web:
+    external: true
+
+volumes:
+  magistert-pgdata:
