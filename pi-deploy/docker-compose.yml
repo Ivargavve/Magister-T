@@ -36,7 +36,7 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.magistert-api.rule=Host(`magistert.gavelinivar.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.magistert-api.rule=Host(`magistert-api.gavelinivar.com`)"
       - "traefik.http.routers.magistert-api.entrypoints=websecure"
       - "traefik.http.routers.magistert-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.magistert-api.loadbalancer.server.port=3001"
