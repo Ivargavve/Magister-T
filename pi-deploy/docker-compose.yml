@@ -21,6 +21,8 @@ services:
     image: ghcr.io/ivargavve/magister-t/backend:latest
     container_name: magistert-backend
     restart: unless-stopped
+    ports:
+      - "3001:3001"
     environment:
       NODE_ENV: production
       PORT: 3001
@@ -34,35 +36,10 @@ services:
         condition: service_healthy
     networks:
       - magistert-internal
-      - web
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.magistert-api.rule=Host(`magistert-api.gavelinivar.com`)"
-      - "traefik.http.routers.magistert-api.entrypoints=websecure"
-      - "traefik.http.routers.magistert-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.magistert-api.loadbalancer.server.port=3001"
-      - "traefik.docker.network=web"
-
-  frontend:
-    image: ghcr.io/ivargavve/magister-t/frontend:latest
-    container_name: magistert-frontend
-    restart: unless-stopped
-    networks:
-      - magistert-internal
-      - web
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.magistert-web.rule=Host(`magistert.gavelinivar.com`)"
-      - "traefik.http.routers.magistert-web.entrypoints=websecure"
-      - "traefik.http.routers.magistert-web.tls.certresolver=letsencrypt"
-      - "traefik.http.services.magistert-web.loadbalancer.server.port=80"
-      - "traefik.docker.network=web"
 
 networks:
   magistert-internal:
     driver: bridge
-  web:
-    external: true
 
 volumes:
   magistert-pgdata:
