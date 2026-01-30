@@ -337,9 +337,8 @@ function Sidebar({
           )}
         </div>
 
-        {/* Version info */}
+        {/* Footer info */}
         <div className="text-center pt-1">
-          <p className="text-[10px] text-warm-500">{t('versionInfo')}</p>
           <p className="text-[9px] text-warm-600">{t('personification')}</p>
           <a
             href="https://aerocaptureproductions.com/"

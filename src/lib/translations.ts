@@ -31,7 +31,6 @@ export const translations = {
     previousChats: 'Tidigare Chattar',
     noSavedChats: 'Inga sparade chattar än',
     admin: 'Admin',
-    versionInfo: 'v1.0 • Jan 2026',
     personification: 'Personifiering av Markus Tångring',
 
     // Settings
@@ -130,7 +129,6 @@ export const translations = {
     previousChats: 'Previous Chats',
     noSavedChats: 'No saved chats yet',
     admin: 'Admin',
-    versionInfo: 'v1.0 • Jan 2026',
     personification: 'Personification of Markus Tångring',
 
     // Settings
