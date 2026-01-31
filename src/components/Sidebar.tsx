@@ -28,7 +28,8 @@ interface SidebarProps {
 // Admin email whitelist
 const ADMIN_EMAILS = [
   'ivargavelin@gmail.com',
-  'markus.tangring@gmail.com'
+  'markus.tangring@gmail.com',
+  'markustangring@hotmail.com'
 ]
 
 function Sidebar({
