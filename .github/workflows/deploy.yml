@@ -75,14 +75,19 @@ jobs:
           ssh pi "mkdir -p ~/docker/magister-t"
           scp pi-deploy/docker-compose.yml pi:~/docker/magister-t/
 
+      - name: Set image name
+        id: deploy-image
+        run: echo "name=$(echo '${{ github.repository }}/backend' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Deploy
         run: |
-          ssh pi << 'DEPLOY_SCRIPT'
+          ssh pi << DEPLOY_SCRIPT
+            set -e
             cd ~/docker/magister-t
 
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
-            docker pull ghcr.io/${{ github.repository_owner }}/magister-t/backend:latest
+            docker pull ${{ env.REGISTRY }}/${{ steps.deploy-image.outputs.name }}:latest
 
             if [ ! -f .env ]; then
               echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
