@@ -53,7 +53,7 @@ function CodeBlock({ children, copyTitle }: { children: React.ReactNode; copyTit
   const codeText = getTextContent(children)
 
   return (
-    <pre className="relative bg-gray-800/90 backdrop-blur-sm rounded-lg my-3 p-4 overflow-x-auto shadow-md group">
+    <pre className="relative bg-gray-800/90 backdrop-blur-sm rounded-lg my-3 p-4 overflow-x-auto max-w-full shadow-md group">
       <CopyButton text={codeText} title={copyTitle} />
       <code className="block text-gray-100 text-sm font-mono whitespace-pre">{codeText}</code>
     </pre>
@@ -80,7 +80,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
       className={`flex ${isAssistant ? 'justify-start' : 'justify-end'} animate-fade-in mb-4`}
     >
       <div
-        className={`max-w-[85%] md:max-w-[90%] transition-all duration-200 relative ${
+        className={`max-w-[85%] md:max-w-[90%] min-w-0 transition-all duration-200 relative ${
           isAssistant
             ? 'px-0 md:px-5 py-2 md:py-4'
             : ''
@@ -161,7 +161,7 @@ function MessageBubble({ message }: MessageBubbleProps) {
         <div
           className={`text-base leading-relaxed font-serif ${
             isAssistant
-              ? 'text-gray-900 markdown-content overflow-hidden'
+              ? 'text-gray-900 markdown-content overflow-hidden min-w-0'
               : 'bg-magister-600 text-white px-4 py-3 rounded-2xl rounded-tr-sm shadow-md whitespace-pre-wrap'
           }`}
         >

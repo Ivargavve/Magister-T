@@ -74,7 +74,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
       {/* Content container */}
       <div className="relative flex-1 flex overflow-hidden">
       {/* Main chat area wrapper - handles portrait spacing and centering */}
-      <div className="flex-1 flex justify-center lg:pr-[250px] xl:pr-[300px] 2xl:pr-[350px]">
+      <div className="flex-1 flex justify-center min-w-0 lg:pr-[250px] xl:pr-[300px] 2xl:pr-[350px]">
       {/* Centered chat content */}
       <div className="w-full max-w-5xl flex flex-col overflow-hidden">
         {/* Wood plank header - only show when there are messages */}
@@ -91,7 +91,7 @@ function Chat({ messages, onSendMessage, isLoading, isStreaming, onStopStreaming
 
         {/* Chat content area with parchment background */}
         <div
-          className={`flex-1 ${messages.length > 0 ? 'overflow-y-auto bg-no-repeat mx-0 md:mx-4 -mb-10 relative z-0' : 'overflow-hidden'}`}
+          className={`flex-1 ${messages.length > 0 ? 'overflow-y-auto overflow-x-hidden bg-no-repeat mx-0 md:mx-4 -mb-10 relative z-0' : 'overflow-hidden'}`}
           style={messages.length > 0 ? {
             backgroundImage: `url(${chatBackgroundPaper})`,
             backgroundSize: '100% calc(100% + 40px)',
